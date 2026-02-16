@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Car, GameState, LightsState } from '@/types';
 import { GAME_CONFIG } from '@/lib/constants';
 import {
@@ -241,12 +242,6 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
               GO! GO! GO!
             </p>
           )}
-          {lightsState.falseStart && (
-            <div className="bg-f1-red/90 text-white px-6 py-3 rounded-lg mt-24">
-              <p className="text-2xl font-bold">FALSE START!</p>
-              <p className="text-sm">You released too early</p>
-            </div>
-          )}
         </div>
 
         {/* Player Info */}
@@ -258,10 +253,82 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
         </div>
       </div>
 
-      {/* Results Screen */}
-      {gameState === 'finished' && (
+      {/* False Start Screen */}
+      {gameState === 'finished' && lightsState.falseStart && (
+        <FalseStartScreen />
+      )}
+
+      {/* Results Screen (only for normal finish) */}
+      {gameState === 'finished' && !lightsState.falseStart && (
         <ResultsScreen results={getRaceResults(cars)} />
       )}
+    </div>
+  );
+}
+
+/**
+ * False Start Screen Component
+ */
+function FalseStartScreen() {
+  const router = useRouter();
+
+  const handleRaceAgain = () => {
+    window.location.reload();
+  };
+
+  const handleNewPlayer = () => {
+    localStorage.removeItem('playerData');
+    router.push('/');
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 fade-in">
+      <div className="w-full max-w-2xl px-6 py-8 text-center">
+        {/* False Start Icon */}
+        <div className="text-8xl mb-6">🚫</div>
+
+        {/* Header */}
+        <div className="mb-8">
+          <h2 className="text-6xl font-bold mb-4 text-f1-red neon-glow-red">
+            FALSE START!
+          </h2>
+          <p className="text-2xl text-gray-300 mb-2">
+            You released your thumb too early
+          </p>
+          <p className="text-lg text-gray-500">
+            Wait for all lights to go out before releasing
+          </p>
+        </div>
+
+        {/* Penalty Notice */}
+        <div className="bg-f1-red/20 border-2 border-f1-red rounded-lg p-6 mb-8">
+          <p className="text-xl font-bold text-f1-red mb-2">⚠️ PENALTY</p>
+          <p className="text-gray-300">
+            In Formula 1, a false start results in a time penalty or disqualification.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={handleRaceAgain}
+            className="py-4 bg-f1-red text-white font-bold rounded-lg hover:bg-red-600 transition-colors text-lg"
+          >
+            🏁 TRY AGAIN
+          </button>
+          <button
+            onClick={handleNewPlayer}
+            className="py-4 bg-f1-gray text-white font-bold rounded-lg hover:bg-gray-700 transition-colors border-2 border-f1-gray text-lg"
+          >
+            👤 NEW PLAYER
+          </button>
+        </div>
+
+        {/* Tip */}
+        <div className="mt-6 text-sm text-gray-500">
+          💡 Tip: Keep your finger pressed until you see the "GO! GO! GO!" message
+        </div>
+      </div>
     </div>
   );
 }
