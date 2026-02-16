@@ -92,12 +92,28 @@ export function startBotCars(
 
 /**
  * Update car positions based on their speeds
+ * Also track finish times when cars cross the finish line
  */
 export function updateCarPositions(cars: Car[]): Car[] {
-  return cars.map((car) => ({
-    ...car,
-    position: Math.min(car.position + car.speed, GAME_CONFIG.RACE_DISTANCE),
-  }));
+  const currentTime = Date.now();
+
+  return cars.map((car) => {
+    const newPosition = Math.min(car.position + car.speed, GAME_CONFIG.RACE_DISTANCE);
+
+    // If car just crossed finish line, record finish time
+    if (newPosition >= GAME_CONFIG.RACE_DISTANCE && car.position < GAME_CONFIG.RACE_DISTANCE) {
+      return {
+        ...car,
+        position: newPosition,
+        finishTime: currentTime,
+      };
+    }
+
+    return {
+      ...car,
+      position: newPosition,
+    };
+  });
 }
 
 /**
@@ -109,15 +125,28 @@ export function isRaceFinished(cars: Car[]): boolean {
 
 /**
  * Get race results sorted by finish position
+ * Cars are ranked by who crossed the finish line first (earliest finishTime)
  */
 export function getRaceResults(cars: Car[]): RaceResult[] {
-  // Sort by position (descending) and assign positions
-  const sortedCars = [...cars].sort((a, b) => b.position - a.position);
+  // Sort by finish time (ascending - earliest finish wins)
+  // Cars without finish time go to the end
+  const sortedCars = [...cars].sort((a, b) => {
+    // If both have finish times, sort by time (earliest first)
+    if (a.finishTime && b.finishTime) {
+      return a.finishTime - b.finishTime;
+    }
+    // If only a has finish time, a wins
+    if (a.finishTime) return -1;
+    // If only b has finish time, b wins
+    if (b.finishTime) return 1;
+    // If neither has finish time, sort by current position
+    return b.position - a.position;
+  });
 
   return sortedCars.map((car, index) => ({
     car,
     position: index + 1,
-    finishTime: car.reactionTime, // Simplified - could add actual finish time
+    finishTime: car.finishTime || 0,
   }));
 }
 

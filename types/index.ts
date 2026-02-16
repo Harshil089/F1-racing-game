@@ -16,6 +16,7 @@ export interface Car {
   speed: number;
   reactionTime: number;
   isPlayer: boolean;
+  finishTime?: number; // Timestamp when car crossed finish line
 }
 
 // Game state types
