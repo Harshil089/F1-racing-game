@@ -100,6 +100,12 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   // Handle touch events
   useEffect(() => {
     const handleTouchEnd = (e: TouchEvent) => {
+      // Only prevent default for canvas touches, not button clicks
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'BUTTON') {
+        return; // Let button clicks work normally
+      }
+
       e.preventDefault();
 
       if (gameState === 'ready') {

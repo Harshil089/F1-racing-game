@@ -151,7 +151,7 @@ export function getCarXPosition(position: number, canvasWidth: number): number {
 }
 
 /**
- * Draw a car on canvas
+ * Draw a car on canvas with F1 styling
  */
 export function drawCar(
   ctx: CanvasRenderingContext2D,
@@ -159,27 +159,116 @@ export function drawCar(
   x: number,
   y: number
 ) {
-  // Draw car body (rounded rectangle)
+  const width = GAME_CONFIG.CAR_WIDTH;
+  const height = GAME_CONFIG.CAR_HEIGHT;
+
+  ctx.save();
+
+  // Main car body (tapered shape)
   ctx.fillStyle = car.color;
   ctx.beginPath();
-  ctx.roundRect(x, y, GAME_CONFIG.CAR_WIDTH, GAME_CONFIG.CAR_HEIGHT, 5);
+
+  // Front nose (pointed)
+  ctx.moveTo(x + width, y + height / 2);
+
+  // Top side
+  ctx.lineTo(x + width * 0.7, y + height * 0.3);
+  ctx.lineTo(x + width * 0.4, y + height * 0.25);
+
+  // Cockpit area
+  ctx.lineTo(x + width * 0.3, y + height * 0.25);
+  ctx.lineTo(x + width * 0.2, y + height * 0.3);
+
+  // Rear wing mount
+  ctx.lineTo(x, y + height * 0.35);
+  ctx.lineTo(x, y + height * 0.65);
+
+  // Bottom side (mirror of top)
+  ctx.lineTo(x + width * 0.2, y + height * 0.7);
+  ctx.lineTo(x + width * 0.3, y + height * 0.75);
+  ctx.lineTo(x + width * 0.4, y + height * 0.75);
+  ctx.lineTo(x + width * 0.7, y + height * 0.7);
+
+  // Close at nose
+  ctx.lineTo(x + width, y + height / 2);
   ctx.fill();
 
-  // Draw car outline
-  ctx.strokeStyle = '#FFFFFF';
-  ctx.lineWidth = 2;
+  // Add darker shade for depth
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.beginPath();
+  ctx.moveTo(x + width, y + height / 2);
+  ctx.lineTo(x + width * 0.7, y + height * 0.7);
+  ctx.lineTo(x + width * 0.4, y + height * 0.75);
+  ctx.lineTo(x + width * 0.4, y + height * 0.5);
+  ctx.fill();
+
+  // Cockpit (darker area)
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.beginPath();
+  ctx.ellipse(
+    x + width * 0.25,
+    y + height / 2,
+    width * 0.08,
+    height * 0.15,
+    0,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+
+  // Front wing
+  ctx.strokeStyle = car.color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x + width * 0.95, y + height * 0.2);
+  ctx.lineTo(x + width, y + height * 0.2);
+  ctx.moveTo(x + width * 0.95, y + height * 0.8);
+  ctx.lineTo(x + width, y + height * 0.8);
   ctx.stroke();
 
-  // Draw car number
+  // Rear wing
+  ctx.fillStyle = car.color;
+  ctx.fillRect(x - 5, y + height * 0.3, 5, height * 0.4);
+  ctx.fillRect(x - 8, y + height * 0.25, 8, 3);
+
+  // Wheels (simple circles)
+  ctx.fillStyle = '#1A1A1A';
+  // Front wheel
+  ctx.beginPath();
+  ctx.arc(x + width * 0.75, y + height * 0.2, 4, 0, Math.PI * 2);
+  ctx.arc(x + width * 0.75, y + height * 0.8, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Rear wheel
+  ctx.beginPath();
+  ctx.arc(x + width * 0.15, y + height * 0.2, 4, 0, Math.PI * 2);
+  ctx.arc(x + width * 0.15, y + height * 0.8, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Car number on body
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 14px sans-serif';
+  ctx.font = 'bold 12px sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(
     car.carNumber.toString(),
-    x + GAME_CONFIG.CAR_WIDTH / 2,
-    y + GAME_CONFIG.CAR_HEIGHT / 2
+    x + width * 0.5,
+    y + height / 2
   );
+
+  // Outline for definition
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + width, y + height / 2);
+  ctx.lineTo(x + width * 0.7, y + height * 0.3);
+  ctx.lineTo(x + width * 0.4, y + height * 0.25);
+  ctx.lineTo(x + width * 0.3, y + height * 0.25);
+  ctx.lineTo(x + width * 0.2, y + height * 0.3);
+  ctx.lineTo(x, y + height * 0.35);
+  ctx.stroke();
+
+  ctx.restore();
 }
 
 /**
