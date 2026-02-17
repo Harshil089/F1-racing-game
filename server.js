@@ -44,9 +44,10 @@ app.prepare().then(() => {
     });
   });
 
-  httpServer.listen(port, (err) => {
+  httpServer.listen(port, '0.0.0.0', (err) => {
     if (err) throw err;
     console.log(`> Ready on http://${hostname}:${port}`);
-    console.log(`> Socket.IO server running`);
+    console.log(`> Socket.IO server running on port ${port}`);
+    console.log(`> WebSocket endpoint: ws://${hostname}:${port}/socket.io`);
   });
 });

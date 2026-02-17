@@ -3,50 +3,102 @@
  */
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { LeaderboardEntry } from '@/lib/leaderboard';
 
-let socket: Socket | null = null;
+// Dynamically import socket.io-client only on client side
+let ioClient: any = null;
+if (typeof window !== 'undefined') {
+  import('socket.io-client').then((module) => {
+    ioClient = module.io;
+  });
+}
 
 export function useLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const socketRef = useRef<any>(null);
+  const initializingRef = useRef(false);
 
   // Initialize socket connection
   useEffect(() => {
-    // Only initialize once
-    if (!socket) {
-      socket = io({
-        path: '/socket.io',
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-      });
-
-      socket.on('connect', () => {
-        console.log('Socket connected');
-        setIsConnected(true);
-      });
-
-      socket.on('disconnect', () => {
-        console.log('Socket disconnected');
-        setIsConnected(false);
-      });
-
-      socket.on('leaderboard:updated', (data: { leaderboard: LeaderboardEntry[] }) => {
-        console.log('Leaderboard updated:', data);
-        setLeaderboard(data.leaderboard);
-      });
+    // Prevent multiple initializations
+    if (initializingRef.current || socketRef.current) {
+      return;
     }
+
+    const initSocket = async () => {
+      // Wait for client-side only
+      if (typeof window === 'undefined') return;
+
+      // Wait for io to be loaded
+      let attempts = 0;
+      while (!ioClient && attempts < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+
+      if (!ioClient) {
+        console.error('Failed to load socket.io-client');
+        return;
+      }
+
+      initializingRef.current = true;
+
+      try {
+        const socket = ioClient('http://localhost:3000', {
+          path: '/socket.io',
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionAttempts: 10,
+          reconnectionDelay: 1000,
+          timeout: 10000,
+        });
+
+        socket.on('connect', () => {
+          console.log('✅ Socket connected:', socket.id);
+          setIsConnected(true);
+        });
+
+        socket.on('disconnect', (reason: string) => {
+          console.log('❌ Socket disconnected:', reason);
+          setIsConnected(false);
+        });
+
+        socket.on('connect_error', (error: Error) => {
+          console.error('❌ Socket connection error:', error.message);
+          setIsConnected(false);
+        });
+
+        socket.on('error', (error: Error) => {
+          console.error('❌ Socket error:', error);
+        });
+
+        socket.on('leaderboard:updated', (data: { leaderboard: LeaderboardEntry[] }) => {
+          console.log('📊 Leaderboard updated:', data);
+          setLeaderboard(data.leaderboard);
+        });
+
+        socketRef.current = socket;
+      } catch (error) {
+        console.error('Error initializing socket:', error);
+        initializingRef.current = false;
+      }
+    };
+
+    initSocket();
 
     // Fetch initial leaderboard
     fetchLeaderboard();
 
     return () => {
-      // Don't disconnect on unmount to keep connection alive
-      // socket?.disconnect();
+      // Clean up on unmount
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        initializingRef.current = false;
+      }
     };
   }, []);
 
@@ -58,6 +110,8 @@ export function useLeaderboard() {
       if (response.ok) {
         const data = await response.json();
         setLeaderboard(data.leaderboard || []);
+      } else {
+        console.error('Failed to fetch leaderboard:', response.status);
       }
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
@@ -92,8 +146,8 @@ export function useLeaderboard() {
           const data = await response.json();
 
           // Broadcast update to all connected clients
-          if (socket) {
-            socket.emit('leaderboard:update', {
+          if (socketRef.current && socketRef.current.connected) {
+            socketRef.current.emit('leaderboard:update', {
               leaderboard: data.leaderboard,
             });
           }
