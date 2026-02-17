@@ -4,6 +4,7 @@
 
 export interface LeaderboardEntry {
   name: string;
+  phone: string;
   reactionTime: number;
   carNumber: number;
   timestamp: number;
@@ -51,6 +52,7 @@ export function qualifiesForLeaderboard(reactionTime: number): boolean {
  */
 export function updateLeaderboard(
   name: string,
+  phone: string,
   reactionTime: number,
   carNumber: number
 ): number | null {
@@ -59,15 +61,31 @@ export function updateLeaderboard(
 
   const leaderboard = getLeaderboard();
 
-  const newEntry: LeaderboardEntry = {
-    name,
-    reactionTime,
-    carNumber,
-    timestamp: Date.now(),
-  };
+  // Check if user already exists (by name + phone combination)
+  const existingEntryIndex = leaderboard.findIndex(
+    entry => entry.name === name && entry.phone === phone
+  );
 
-  // Add new entry
-  leaderboard.push(newEntry);
+  if (existingEntryIndex !== -1) {
+    // Update existing entry with new reaction time
+    leaderboard[existingEntryIndex] = {
+      name,
+      phone,
+      reactionTime,
+      carNumber,
+      timestamp: Date.now(),
+    };
+  } else {
+    // Add new entry
+    const newEntry: LeaderboardEntry = {
+      name,
+      phone,
+      reactionTime,
+      carNumber,
+      timestamp: Date.now(),
+    };
+    leaderboard.push(newEntry);
+  }
 
   // Sort by reaction time (ascending - fastest first)
   leaderboard.sort((a, b) => a.reactionTime - b.reactionTime);
@@ -82,11 +100,9 @@ export function updateLeaderboard(
     console.error('Error saving leaderboard:', error);
   }
 
-  // Find position of the new entry (1-indexed)
+  // Find position of the current user (1-indexed)
   const position = topThree.findIndex(entry =>
-    entry.name === name &&
-    entry.reactionTime === reactionTime &&
-    entry.timestamp === newEntry.timestamp
+    entry.name === name && entry.phone === phone
   );
 
   return position >= 0 ? position + 1 : null;

@@ -21,6 +21,7 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [leaderboardPosition, setLeaderboardPosition] = useState<number | null>(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
+  const [playerPhone, setPlayerPhone] = useState<string>('');
 
   const playerResult = results.find((r) => r.car.isPlayer);
   const playerReactionTime = playerResult?.car.reactionTime || 0;
@@ -28,6 +29,19 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
   const playerCarNumber = playerResult?.car.carNumber || 0;
 
   useEffect(() => {
+    // Load player phone from localStorage
+    const playerData = localStorage.getItem('playerData');
+    let phone = '';
+    if (playerData) {
+      try {
+        const data = JSON.parse(playerData);
+        phone = data.phone || '';
+        setPlayerPhone(phone);
+      } catch (error) {
+        console.error('Error parsing player data:', error);
+      }
+    }
+
     // Load best time from localStorage
     const stored = localStorage.getItem('bestReactionTime');
     if (stored) {
@@ -49,8 +63,8 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
     const currentLeaderboard = getLeaderboard();
 
     // Check if player qualifies for leaderboard
-    if (qualifiesForLeaderboard(playerReactionTime)) {
-      const position = updateLeaderboard(playerName, playerReactionTime, playerCarNumber);
+    if (qualifiesForLeaderboard(playerReactionTime) && phone) {
+      const position = updateLeaderboard(playerName, phone, playerReactionTime, playerCarNumber);
       if (position !== null) {
         setLeaderboardPosition(position);
         setIsNewRecord(position === 1 && currentLeaderboard.length > 0);
@@ -149,12 +163,13 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
                 leaderboard.map((entry, index) => {
                   const position = index + 1;
                   const isCurrentPlayer = entry.name === playerName &&
-                                         entry.reactionTime === playerReactionTime &&
+                                         entry.phone === playerPhone &&
                                          Math.abs(entry.timestamp - Date.now()) < 5000; // Within last 5 seconds
+                  const lastFourDigits = entry.phone.slice(-4);
 
                   return (
                     <div
-                      key={`${entry.name}-${entry.timestamp}`}
+                      key={`${entry.name}-${entry.phone}-${entry.timestamp}`}
                       className={`flex items-center justify-between p-4 rounded-xl transition-all ${
                         isCurrentPlayer
                           ? 'bg-google-blue/10 border-2 border-google-blue google-shadow animate-pulse'
@@ -172,7 +187,12 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
                               <span className="ml-2 google-badge google-badge-primary">YOU</span>
                             )}
                           </p>
-                          <p className="text-sm text-gray-500">Car #{entry.carNumber}</p>
+                          <p className="text-xs text-gray-500">
+                            ···{lastFourDigits}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {new Date(entry.timestamp).toLocaleDateString()} • Car #{entry.carNumber}
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">

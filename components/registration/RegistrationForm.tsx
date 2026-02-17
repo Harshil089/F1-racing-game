@@ -63,6 +63,7 @@ export default function RegistrationForm() {
         // Store user data in localStorage for game page
         localStorage.setItem('playerData', JSON.stringify({
           name: formData.name.trim(),
+          phone: formData.phone.trim(),
           carNumber: parseInt(formData.carNumber, 10),
         }));
 
