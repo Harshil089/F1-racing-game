@@ -11,14 +11,14 @@ import {
   updateCarPositions,
   isRaceFinished,
   getRaceResults,
-  getLaneYPosition,
-  getCarXPosition,
-  drawCar,
+  getLaneXPosition,
+  getCarYPosition,
   drawTrack,
 } from '@/lib/gameLogic';
 import { audioEngine } from '@/lib/audioEngine';
 import StartLights from './StartLights';
 import ResultsScreen from './ResultsScreen';
+import F1Car from './F1Car';
 
 interface RaceTrackProps {
   playerName: string;
@@ -190,7 +190,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
     };
   }, [gameState, lightsOutTimestamp]);
 
-  // Render canvas
+  // Render canvas (track only)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -200,14 +200,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
 
     // Clear and draw track
     drawTrack(ctx, canvasSize.width, canvasSize.height);
-
-    // Draw cars
-    cars.forEach((car, index) => {
-      const x = getCarXPosition(car.position, canvasSize.width);
-      const y = getLaneYPosition(index, canvasSize.height);
-      drawCar(ctx, car, x, y);
-    });
-  }, [cars, canvasSize]);
+  }, [canvasSize]);
 
   return (
     <div className="relative w-full h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-white">
@@ -224,6 +217,35 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
           height={canvasSize.height}
           className="border-4 border-google-blue/20 rounded-2xl google-shadow-lg bg-white"
         />
+
+        {/* F1 Cars - Rendered as React Components */}
+        {cars.map((car, index) => {
+          const x = getLaneXPosition(index, canvasSize.width);
+          const y = getCarYPosition(car.position, canvasSize.height);
+          const scale = 0.15; // Scale down the detailed car to fit
+
+          return (
+            <div
+              key={car.id}
+              className="absolute pointer-events-none"
+              style={{
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: 'rotate(90deg)', // Rotate car to point downward for vertical racing
+                transformOrigin: 'center center',
+              }}
+            >
+              <F1Car color={car.color} scale={scale} />
+              {/* Car number label */}
+              <div
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white font-bold text-xs bg-black/50 rounded-full w-6 h-6 flex items-center justify-center"
+                style={{ transform: 'translate(-50%, -50%) rotate(-90deg)' }}
+              >
+                {car.carNumber}
+              </div>
+            </div>
+          );
+        })}
 
         {/* Status Text - Google themed */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-center z-20">

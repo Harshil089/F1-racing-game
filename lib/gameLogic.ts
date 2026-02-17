@@ -160,23 +160,23 @@ export function getPlayerPosition(cars: Car[]): number {
 }
 
 /**
- * Calculate lane Y position for a car
+ * Calculate lane X position for a car (vertical layout - cars in horizontal lanes)
  */
-export function getLaneYPosition(carIndex: number, canvasHeight: number): number {
-  const laneHeight = canvasHeight / GAME_CONFIG.LANE_COUNT;
-  return carIndex * laneHeight + laneHeight / 2 - GAME_CONFIG.CAR_HEIGHT / 2;
+export function getLaneXPosition(carIndex: number, canvasWidth: number): number {
+  const laneWidth = canvasWidth / GAME_CONFIG.LANE_COUNT;
+  return carIndex * laneWidth + laneWidth / 2 - GAME_CONFIG.CAR_WIDTH / 2;
 }
 
 /**
- * Calculate car X position based on progress
+ * Calculate car Y position based on progress (vertical layout - moving top to bottom)
  */
-export function getCarXPosition(position: number, canvasWidth: number): number {
-  const startX = 50; // Start line offset
-  const finishX = canvasWidth - 100; // Finish line position
-  const trackLength = finishX - startX;
+export function getCarYPosition(position: number, canvasHeight: number): number {
+  const startY = 50; // Start line offset
+  const finishY = canvasHeight - 100; // Finish line position
+  const trackLength = finishY - startY;
 
   const progress = position / GAME_CONFIG.RACE_DISTANCE;
-  return startX + progress * trackLength;
+  return startY + progress * trackLength;
 }
 
 /**
@@ -301,7 +301,7 @@ export function drawCar(
 }
 
 /**
- * Draw track with lanes
+ * Draw track with lanes (vertical layout)
  */
 export function drawTrack(
   ctx: CanvasRenderingContext2D,
@@ -312,36 +312,36 @@ export function drawTrack(
   ctx.fillStyle = '#1A1A1A';
   ctx.fillRect(0, 0, width, height);
 
-  // Lane dividers
-  const laneHeight = height / GAME_CONFIG.LANE_COUNT;
+  // Lane dividers (vertical lines for horizontal lanes)
+  const laneWidth = width / GAME_CONFIG.LANE_COUNT;
   ctx.strokeStyle = '#333333';
   ctx.lineWidth = 1;
   ctx.setLineDash([10, 10]);
 
   for (let i = 1; i < GAME_CONFIG.LANE_COUNT; i++) {
-    const y = i * laneHeight;
+    const x = i * laneWidth;
     ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
     ctx.stroke();
   }
 
   ctx.setLineDash([]);
 
-  // Start line
+  // Start line (horizontal line at top)
   ctx.strokeStyle = '#FFFFFF';
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(50, 0);
-  ctx.lineTo(50, height);
+  ctx.moveTo(0, 50);
+  ctx.lineTo(width, 50);
   ctx.stroke();
 
-  // Finish line (checkered pattern simulation)
-  const finishX = width - 100;
+  // Finish line (checkered pattern simulation - horizontal line at bottom)
+  const finishY = height - 100;
   ctx.strokeStyle = '#FFFFFF';
   ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(finishX, 0);
-  ctx.lineTo(finishX, height);
+  ctx.moveTo(0, finishY);
+  ctx.lineTo(width, finishY);
   ctx.stroke();
 }

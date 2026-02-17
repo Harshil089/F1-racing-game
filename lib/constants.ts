@@ -6,11 +6,11 @@ export const GAME_CONFIG: GameConfig = {
   MIN_RANDOM_DELAY: 1000,      // Minimum random delay before lights out
   MAX_RANDOM_DELAY: 3000,      // Maximum random delay before lights out
   RACE_DISTANCE: 600,          // Distance to finish line in pixels
-  CANVAS_WIDTH: 800,           // Base canvas width
-  CANVAS_HEIGHT: 600,          // Base canvas height
-  LANE_COUNT: 6,               // Total number of lanes (1 player + 5 bots)
-  CAR_WIDTH: 60,               // Car width in pixels
-  CAR_HEIGHT: 30,              // Car height in pixels
+  CANVAS_WIDTH: 600,           // Base canvas width (vertical layout - narrower)
+  CANVAS_HEIGHT: 800,          // Base canvas height (vertical layout - taller)
+  LANE_COUNT: 2,               // Total number of lanes (1 player + 1 bot)
+  CAR_WIDTH: 60,               // Car width in pixels (for detailed F1 car)
+  CAR_HEIGHT: 30,              // Car height in pixels (for detailed F1 car)
   BASE_SPEED: 2,               // Base movement speed
 };
 
@@ -22,34 +22,6 @@ export const BOT_DRIVERS: BotDriver[] = [
     color: '#4285F4', // Google Blue
     minReactionTime: 150,
     maxReactionTime: 300,
-  },
-  {
-    name: 'Martinez',
-    carNumber: 7,
-    color: '#34A853', // Google Green
-    minReactionTime: 180,
-    maxReactionTime: 350,
-  },
-  {
-    name: 'Chen',
-    carNumber: 11,
-    color: '#FBBC05', // Google Yellow
-    minReactionTime: 160,
-    maxReactionTime: 320,
-  },
-  {
-    name: 'Mueller',
-    carNumber: 16,
-    color: '#EA4335', // Google Red
-    minReactionTime: 170,
-    maxReactionTime: 340,
-  },
-  {
-    name: 'Silva',
-    carNumber: 23,
-    color: '#3C4043', // Google Grey
-    minReactionTime: 190,
-    maxReactionTime: 380,
   },
 ];
 
