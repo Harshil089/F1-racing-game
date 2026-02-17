@@ -374,7 +374,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   }, [canvasSize]);
 
   return (
-    <div className={`relative w-full min-h-screen py-8 flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-white ${(gameState === 'countdown' || gameState === 'racing') ? 'touch-action-none overflow-hidden' : ''
+    <div className={`relative w-full min-h-screen py-8 flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-white ${(gameState === 'countdown' || gameState === 'racing') ? 'touch-action-none overflow-hidden h-screen' : ''
       }`}
       style={{ touchAction: (gameState === 'countdown' || gameState === 'racing') ? 'none' : 'auto' }}
     >
@@ -500,9 +500,9 @@ function FalseStartScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-white/98 backdrop-blur-sm fade-in">
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-white/98 backdrop-blur-sm fade-in leaderboard-scroll">
+      <div className="min-h-full flex items-start justify-center p-4 py-8">
+        <div className="w-full max-w-2xl my-auto">
           {/* Google-style card */}
           <div className="bg-white rounded-3xl p-8 google-shadow-lg text-center">
             {/* False Start Icon */}

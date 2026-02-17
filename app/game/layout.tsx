@@ -11,7 +11,7 @@ export default function GameLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="w-full h-screen overflow-hidden">
+    <div className="w-full min-h-screen">
       {children}
     </div>
   );
