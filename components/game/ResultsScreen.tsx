@@ -115,21 +115,21 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-white/98 backdrop-blur-sm fade-in">
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl">
+      <div className="min-h-screen flex items-start justify-center p-4 py-8">
+        <div className="w-full max-w-2xl my-auto">
           {/* Google-style Results Card */}
-          <div className="bg-white rounded-3xl p-8 google-shadow-lg">
+          <div className="bg-white rounded-3xl p-6 md:p-8 google-shadow-lg">
             {/* Header */}
-            <div className="text-center mb-8">
-              <div className="text-7xl mb-4">
+            <div className="text-center mb-6">
+              <div className="text-6xl md:text-7xl mb-3">
                 {isNewRecord ? '🏆' : leaderboardPosition ? getPositionEmoji(leaderboardPosition) : '🏁'}
               </div>
-              <h2 className="text-5xl font-bold mb-3 text-google-blue">
+              <h2 className="text-3xl md:text-5xl font-bold mb-3 text-google-blue">
                 {isNewRecord ? 'NEW RECORD!' : leaderboardPosition ? 'LEADERBOARD!' : 'RACE COMPLETE'}
               </h2>
               {leaderboardPosition && (
-                <div className={`inline-block px-6 py-2 rounded-full border-2 ${getPositionBgColor(leaderboardPosition)}`}>
-                  <p className={`text-2xl font-bold ${getPositionColor(leaderboardPosition)}`}>
+                <div className={`inline-block px-4 md:px-6 py-1.5 md:py-2 rounded-full border-2 ${getPositionBgColor(leaderboardPosition)}`}>
+                  <p className={`text-xl md:text-2xl font-bold ${getPositionColor(leaderboardPosition)}`}>
                     {leaderboardPosition}{leaderboardPosition === 1 ? 'st' : leaderboardPosition === 2 ? 'nd' : leaderboardPosition === 3 ? 'rd' : 'th'} PLACE
                   </p>
                 </div>
@@ -137,25 +137,25 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
             </div>
 
             {/* Player Stats - Google Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 text-center border border-google-green/20">
-                <p className="text-google-grey text-sm font-medium mb-2">⚡ Reaction Time</p>
-                <p className="text-4xl font-bold text-google-green">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 md:p-6 text-center border border-google-green/20">
+                <p className="text-google-grey text-sm font-medium mb-1 md:mb-2">⚡ Reaction Time</p>
+                <p className="text-3xl md:text-4xl font-bold text-google-green">
                   {playerReactionTime}ms
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 text-center border border-google-blue/20">
-                <p className="text-google-grey text-sm font-medium mb-2">🏆 Best Time</p>
-                <p className="text-4xl font-bold text-google-blue">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-4 md:p-6 text-center border border-google-blue/20">
+                <p className="text-google-grey text-sm font-medium mb-1 md:mb-2">🏆 Best Time</p>
+                <p className="text-3xl md:text-4xl font-bold text-google-blue">
                   {bestTime ? `${bestTime}ms` : '--'}
                 </p>
               </div>
             </div>
 
             {/* Leaderboard - Google Style */}
-            <div className="bg-gray-50 rounded-2xl p-6 mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-google-grey flex items-center gap-2">
+            <div className="bg-gray-50 rounded-2xl p-4 md:p-6 mb-4 md:mb-6 max-h-[40vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <h3 className="text-base md:text-xl font-bold text-google-grey flex items-center gap-2">
                   <span>🏆</span> Top 3 Fastest Times
                 </h3>
                 {/* Real-time indicator */}
@@ -183,20 +183,20 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
                     return (
                       <div
                         key={`${entry.name}-${entry.phone}-${entry.timestamp}`}
-                        className={`flex items-center justify-between p-4 rounded-xl transition-all ${isCurrentPlayer
+                        className={`flex items-center justify-between p-3 md:p-4 rounded-xl transition-all ${isCurrentPlayer
                           ? 'bg-google-blue/10 border-2 border-google-blue google-shadow animate-pulse'
                           : 'bg-white border border-gray-200'
                           }`}
                       >
-                        <div className="flex items-center gap-4 flex-1">
-                          <span className={`text-3xl font-bold w-12 ${getPositionColor(position)}`}>
+                        <div className="flex items-center gap-2 md:gap-4 flex-1">
+                          <span className={`text-2xl md:text-3xl font-bold w-8 md:w-12 ${getPositionColor(position)}`}>
                             {getPositionEmoji(position)}
                           </span>
-                          <div className="flex-1">
-                            <p className="font-bold text-google-grey">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-google-grey text-sm md:text-base truncate">
                               {entry.name}
                               {isCurrentPlayer && (
-                                <span className="ml-2 google-badge google-badge-primary">YOU</span>
+                                <span className="ml-2 google-badge google-badge-primary text-xs">YOU</span>
                               )}
                             </p>
                             <p className="text-xs text-gray-500">
@@ -207,8 +207,8 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-mono text-2xl font-bold text-google-green">
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-mono text-lg md:text-2xl font-bold text-google-green">
                             {entry.reactionTime}ms
                           </p>
                           {position === 1 && (
