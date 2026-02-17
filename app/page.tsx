@@ -15,17 +15,17 @@ export default function HomePage() {
     <main className="min-h-screen f1-grid-bg flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Google-style Header */}
-        <div className="text-center mb-12 slide-in">
+        <div className="text-center mb-8 sm:mb-12 slide-in">
           {/* Google-colored logo */}
-          <div className="mb-6">
-            <h1 className="text-6xl font-bold mb-2">
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-4xl sm:text-6xl font-bold mb-1 sm:mb-2">
               <span className="text-google-blue">F</span>
               <span className="text-google-red">1</span>{" "}
               <span className="text-google-yellow">RE</span>
               <span className="text-google-blue">FL</span>
               <span className="text-google-green">EX</span>
             </h1>
-            <h2 className="text-3xl font-bold text-google-grey">
+            <h2 className="text-2xl sm:text-3xl font-bold text-google-grey">
               RACING
             </h2>
           </div>

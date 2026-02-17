@@ -202,10 +202,10 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
           prevCars.map((car) =>
             car.isPlayer
               ? {
-                  ...car,
-                  reactionTime,
-                  speed: calculateSpeed(reactionTime),
-                }
+                ...car,
+                reactionTime,
+                speed: calculateSpeed(reactionTime),
+              }
               : car
           )
         );
@@ -283,10 +283,10 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
           prevCars.map((car) =>
             car.isPlayer
               ? {
-                  ...car,
-                  reactionTime,
-                  speed: calculateSpeed(reactionTime),
-                }
+                ...car,
+                reactionTime,
+                speed: calculateSpeed(reactionTime),
+              }
               : car
           )
         );
@@ -365,7 +365,10 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   }, [canvasSize]);
 
   return (
-    <div className="relative w-full h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-white">
+    <div className={`relative w-full min-h-screen py-8 flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-white ${(gameState === 'countdown' || gameState === 'racing') ? 'touch-action-none overflow-hidden' : ''
+      }`}
+      style={{ touchAction: (gameState === 'countdown' || gameState === 'racing') ? 'none' : 'auto' }}
+    >
       {/* Start Lights */}
       {gameState === 'countdown' && (
         <StartLights lightsState={lightsState} canvasWidth={canvasSize.width} />
@@ -488,59 +491,61 @@ function FalseStartScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/98 backdrop-blur-sm fade-in">
-      <div className="w-full max-w-2xl px-6 py-8">
-        {/* Google-style card */}
-        <div className="bg-white rounded-3xl p-8 google-shadow-lg text-center">
-          {/* False Start Icon */}
-          <div className="text-8xl mb-6">🚫</div>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-white/98 backdrop-blur-sm fade-in">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          {/* Google-style card */}
+          <div className="bg-white rounded-3xl p-8 google-shadow-lg text-center">
+            {/* False Start Icon */}
+            <div className="text-8xl mb-6">🚫</div>
 
-          {/* Header */}
-          <div className="mb-8">
-            <h2 className="text-5xl font-bold mb-4 text-google-red">
-              FALSE START!
-            </h2>
-            <p className="text-xl text-google-grey mb-2">
-              {deviceType === 'mobile'
-                ? 'You released your thumb too early'
-                : 'You released the spacebar too early'}
-            </p>
-            <p className="text-base text-gray-500">
-              Wait for all lights to go out before releasing
-            </p>
-          </div>
+            {/* Header */}
+            <div className="mb-8">
+              <h2 className="text-5xl font-bold mb-4 text-google-red">
+                FALSE START!
+              </h2>
+              <p className="text-xl text-google-grey mb-2">
+                {deviceType === 'mobile'
+                  ? 'You released your thumb too early'
+                  : 'You released the spacebar too early'}
+              </p>
+              <p className="text-base text-gray-500">
+                Wait for all lights to go out before releasing
+              </p>
+            </div>
 
-          {/* Penalty Notice - Google Alert Style */}
-          <div className="google-alert-error mb-8">
-            <p className="text-lg font-bold text-google-red mb-2">⚠️ PENALTY</p>
-            <p className="text-google-grey">
-              In Formula 1, a false start results in a time penalty or disqualification.
-            </p>
-          </div>
+            {/* Penalty Notice - Google Alert Style */}
+            <div className="google-alert-error mb-8">
+              <p className="text-lg font-bold text-google-red mb-2">⚠️ PENALTY</p>
+              <p className="text-google-grey">
+                In Formula 1, a false start results in a time penalty or disqualification.
+              </p>
+            </div>
 
-          {/* Action Buttons - Google Style */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              onClick={handleRaceAgain}
-              className="google-btn-primary py-4 text-lg"
-            >
-              🔄 TRY AGAIN
-            </button>
-            <button
-              onClick={handleNewPlayer}
-              className="google-btn-secondary py-4 text-lg"
-            >
-              👤 NEW PLAYER
-            </button>
-          </div>
+            {/* Action Buttons - Google Style */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                onClick={handleRaceAgain}
+                className="google-btn-primary py-4 text-lg"
+              >
+                🔄 TRY AGAIN
+              </button>
+              <button
+                onClick={handleNewPlayer}
+                className="google-btn-secondary py-4 text-lg"
+              >
+                👤 NEW PLAYER
+              </button>
+            </div>
 
-          {/* Tip - Google Info Style */}
-          <div className="mt-6 bg-blue-50 rounded-lg p-4">
-            <p className="text-sm text-google-grey">
-              💡 <strong>Tip:</strong> {deviceType === 'mobile'
-                ? 'Keep your finger pressed until you see the "GO! GO! GO!" message'
-                : 'Keep the spacebar pressed until you see the "GO! GO! GO!" message'}
-            </p>
+            {/* Tip - Google Info Style */}
+            <div className="mt-6 bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-google-grey">
+                💡 <strong>Tip:</strong> {deviceType === 'mobile'
+                  ? 'Keep your finger pressed until you see the "GO! GO! GO!" message'
+                  : 'Keep the spacebar pressed until you see the "GO! GO! GO!" message'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
