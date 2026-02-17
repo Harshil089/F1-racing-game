@@ -149,6 +149,9 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   useEffect(() => {
     if (deviceType !== 'mobile') return;
 
+    // Don't attach touch handlers when game is finished — allow normal scrolling
+    if (gameState === 'finished') return;
+
     const handleTouchStart = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'BUTTON') return;
