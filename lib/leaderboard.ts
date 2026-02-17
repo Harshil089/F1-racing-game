@@ -1,5 +1,5 @@
 /**
- * Leaderboard system for tracking top 3 fastest reaction times
+ * Leaderboard system for tracking top 10 fastest reaction times
  */
 
 export interface LeaderboardEntry {
@@ -11,7 +11,7 @@ export interface LeaderboardEntry {
 }
 
 const LEADERBOARD_KEY = 'f1_leaderboard';
-const MAX_ENTRIES = 3;
+const MAX_ENTRIES = 10;
 
 /**
  * Get current leaderboard from localStorage

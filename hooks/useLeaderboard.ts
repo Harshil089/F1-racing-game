@@ -7,7 +7,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { LeaderboardEntry } from '@/lib/leaderboard';
 
-const POLL_INTERVAL = 3000; // Poll every 3 seconds
+const POLL_INTERVAL = 1000; // Poll every 1 second for real-time feel
 
 export function useLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);

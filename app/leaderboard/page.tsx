@@ -81,9 +81,9 @@ export default function LeaderboardPage() {
               <p className="text-3xl font-bold text-google-green">
                 {leaderboard.length > 0
                   ? `${Math.round(
-                      leaderboard.reduce((sum, entry) => sum + entry.reactionTime, 0) /
-                        leaderboard.length
-                    )}ms`
+                    leaderboard.reduce((sum, entry) => sum + entry.reactionTime, 0) /
+                    leaderboard.length
+                  )}ms`
                   : '--'}
               </p>
             </div>
@@ -93,7 +93,7 @@ export default function LeaderboardPage() {
         {/* Leaderboard Card */}
         <div className="bg-white rounded-3xl p-8 google-shadow-lg">
           <h2 className="text-2xl font-bold text-google-grey mb-6 flex items-center gap-2">
-            <span>🏆</span> Top 3 Champions
+            <span>🏆</span> Top 10 Champions
           </h2>
 
           {isLoading ? (

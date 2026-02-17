@@ -60,8 +60,8 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
       setBestTime(playerReactionTime);
     }
 
-    // Check if player qualifies for leaderboard and update via API
-    if (qualifiesForLeaderboard(playerReactionTime) && phone) {
+    // Check if player has a valid time and update via API
+    if (playerReactionTime > 0 && playerReactionTime < 999 && phone) {
       console.log('[ResultsScreen] Submitting score to leaderboard...');
       updateLeaderboardRealtime(playerName, phone, playerReactionTime, playerCarNumber)
         .then(result => {
@@ -156,7 +156,7 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
             <div className="bg-gray-50 rounded-2xl p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-google-grey flex items-center gap-2">
-                  <span>🏆</span> Top 3 Fastest Times
+                  <span>🏆</span> Top 10 Fastest Times
                 </h3>
                 {/* Real-time indicator */}
                 <div className="flex items-center gap-2">
@@ -184,8 +184,8 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
                       <div
                         key={`${entry.name}-${entry.phone}-${entry.timestamp}`}
                         className={`flex items-center justify-between p-4 rounded-xl transition-all ${isCurrentPlayer
-                            ? 'bg-google-blue/10 border-2 border-google-blue google-shadow animate-pulse'
-                            : 'bg-white border border-gray-200'
+                          ? 'bg-google-blue/10 border-2 border-google-blue google-shadow animate-pulse'
+                          : 'bg-white border border-gray-200'
                           }`}
                       >
                         <div className="flex items-center gap-4 flex-1">

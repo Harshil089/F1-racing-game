@@ -106,7 +106,9 @@ export function updateCarPositions(cars: Car[]): Car[] {
  * Check if race is finished (all cars crossed finish line)
  */
 export function isRaceFinished(cars: Car[]): boolean {
-  return cars.every((car) => car.position >= GAME_CONFIG.RACE_DISTANCE);
+  // Finish the race when any car reaches 85% of the distance
+  // This makes the game feel faster and shows results before the wait is too long
+  return cars.some((car) => car.position >= GAME_CONFIG.RACE_DISTANCE * 0.85);
 }
 
 /**
