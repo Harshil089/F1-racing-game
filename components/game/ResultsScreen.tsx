@@ -18,6 +18,7 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
   const [bestTime, setBestTime] = useState<number | null>(null);
   const [leaderboardPosition, setLeaderboardPosition] = useState<number | null>(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
+  const [isCurrentTime, setIsCurrentTime] = useState(false); // Whether this race's time earned the position
   const [playerPhone, setPlayerPhone] = useState<string>('');
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
@@ -66,9 +67,11 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
       updateLeaderboardRealtime(playerName, phone, playerReactionTime, playerCarNumber)
         .then(result => {
           if (result.position !== null) {
-            console.log('[ResultsScreen] Position received:', result.position);
+            console.log('[ResultsScreen] Position received:', result.position, 'isCurrentTime:', result.isCurrentTime);
             setLeaderboardPosition(result.position);
-            setIsNewRecord(result.position === 1 && result.leaderboard.length > 1);
+            setIsCurrentTime(result.isCurrentTime);
+            // Only mark as new record if this race's time is actually the fastest AND it's this race's time
+            setIsNewRecord(result.position === 1 && result.leaderboard.length > 1 && result.isCurrentTime);
           }
           setScoreSubmitted(true);
         })
@@ -127,17 +130,22 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
             {/* Header */}
             <div className="text-center mb-8">
               <div className="text-7xl mb-4">
-                {isNewRecord ? '🏆' : leaderboardPosition ? getPositionEmoji(leaderboardPosition) : '🏁'}
+                {isNewRecord ? '🏆' : (leaderboardPosition && isCurrentTime) ? getPositionEmoji(leaderboardPosition) : '🏁'}
               </div>
               <h2 className="text-5xl font-bold mb-3 text-google-blue">
-                {isNewRecord ? 'NEW RECORD!' : leaderboardPosition ? 'LEADERBOARD!' : 'RACE COMPLETE'}
+                {isNewRecord ? 'NEW RECORD!' : (leaderboardPosition && isCurrentTime) ? 'LEADERBOARD!' : 'RACE COMPLETE'}
               </h2>
-              {leaderboardPosition && (
+              {leaderboardPosition && isCurrentTime && (
                 <div className={`inline-block px-6 py-2 rounded-full border-2 ${getPositionBgColor(leaderboardPosition)}`}>
                   <p className={`text-2xl font-bold ${getPositionColor(leaderboardPosition)}`}>
                     {leaderboardPosition}{leaderboardPosition === 1 ? 'st' : leaderboardPosition === 2 ? 'nd' : leaderboardPosition === 3 ? 'rd' : 'th'} PLACE
                   </p>
                 </div>
+              )}
+              {leaderboardPosition && !isCurrentTime && (
+                <p className="text-sm text-gray-500 mt-2">
+                  Your previous best ({leaderboard.find(e => e.name === playerName && e.phone === playerPhone)?.reactionTime}ms) is still on the leaderboard
+                </p>
               )}
             </div>
 
