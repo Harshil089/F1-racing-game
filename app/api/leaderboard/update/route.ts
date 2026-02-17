@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateLeaderboardInDb } from '@/lib/database';
 
+// Prevent Next.js from caching this route
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/leaderboard/update
  * Update leaderboard with new score
