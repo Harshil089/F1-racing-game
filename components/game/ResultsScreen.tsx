@@ -165,7 +165,7 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
                   const isCurrentPlayer = entry.name === playerName &&
                                          entry.phone === playerPhone &&
                                          Math.abs(entry.timestamp - Date.now()) < 5000; // Within last 5 seconds
-                  const lastFourDigits = entry.phone.slice(-4);
+                  const lastFourDigits = entry.phone ? entry.phone.slice(-4) : '????';
 
                   return (
                     <div

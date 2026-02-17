@@ -22,7 +22,11 @@ export function getLeaderboard(): LeaderboardEntry[] {
     if (!stored) return [];
 
     const leaderboard = JSON.parse(stored) as LeaderboardEntry[];
-    return leaderboard.sort((a, b) => a.reactionTime - b.reactionTime).slice(0, MAX_ENTRIES);
+
+    // Filter out entries without phone numbers (old data)
+    const validEntries = leaderboard.filter(entry => entry.phone && entry.phone.length > 0);
+
+    return validEntries.sort((a, b) => a.reactionTime - b.reactionTime).slice(0, MAX_ENTRIES);
   } catch (error) {
     console.error('Error loading leaderboard:', error);
     return [];
