@@ -15,12 +15,20 @@ export function useLeaderboard() {
   const [isLoading, setIsLoading] = useState(true);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lastUpdateRef = useRef<number>(0);
+  const isUpdatingRef = useRef<boolean>(false); // Track if an update is in progress
 
   // Fetch leaderboard from API
   const fetchLeaderboard = useCallback(async (skipIfRecent = false) => {
     try {
       // Skip fetch if we just updated recently (within last 2 seconds)
       if (skipIfRecent && Date.now() - lastUpdateRef.current < 2000) {
+        return;
+      }
+
+      // Don't fetch if an update is currently in progress
+      // This prevents race conditions where fetch overwrites the update
+      if (isUpdatingRef.current) {
+        console.log('[Polling] Skipping fetch - update in progress');
         return;
       }
 
@@ -31,10 +39,12 @@ export function useLeaderboard() {
       if (response.ok) {
         const data = await response.json();
 
-        // Only update if we haven't updated locally very recently
-        // This prevents polling from overwriting a just-submitted score
-        if (Date.now() - lastUpdateRef.current > 1000) {
+        // Double-check that no update started while we were fetching
+        // This prevents stale data from overwriting fresh updates
+        if (!isUpdatingRef.current) {
           setLeaderboard(data.leaderboard || []);
+        } else {
+          console.log('[Polling] Discarding fetch result - update in progress');
         }
 
         setIsConnected(true);
@@ -77,6 +87,11 @@ export function useLeaderboard() {
       reactionTime: number,
       carNumber: number
     ): Promise<{ position: number | null; leaderboard: LeaderboardEntry[] }> => {
+      // Mark that an update is in progress
+      // This prevents polling from overwriting the update
+      isUpdatingRef.current = true;
+      console.log('[Update] Starting leaderboard update...');
+
       try {
         const response = await fetch('/api/leaderboard/update', {
           method: 'POST',
@@ -94,15 +109,18 @@ export function useLeaderboard() {
         if (response.ok) {
           const data = await response.json();
 
-          // Immediately update local state and mark the update time
-          // This prevents polling from overwriting this fresh data
-          lastUpdateRef.current = Date.now();
+          // Update local state immediately with the fresh data from the server
           setLeaderboard(data.leaderboard);
+          lastUpdateRef.current = Date.now();
 
-          // Wait a bit then fetch fresh data to ensure consistency
+          console.log('[Update] Leaderboard updated successfully', data);
+
+          // Allow polling to resume after a short delay
+          // This ensures the update is visible before polling can overwrite
           setTimeout(() => {
-            fetchLeaderboard(false);
-          }, 3000);
+            isUpdatingRef.current = false;
+            console.log('[Update] Update complete - polling can resume');
+          }, 1500);
 
           return {
             position: data.position,
@@ -110,13 +128,17 @@ export function useLeaderboard() {
           };
         }
 
+        // If update failed, allow polling to resume immediately
+        isUpdatingRef.current = false;
         return { position: null, leaderboard: [] };
       } catch (error) {
         console.error('Error updating leaderboard:', error);
+        // If update failed, allow polling to resume immediately
+        isUpdatingRef.current = false;
         return { position: null, leaderboard: [] };
       }
     },
-    [fetchLeaderboard]
+    []
   );
 
   return {
