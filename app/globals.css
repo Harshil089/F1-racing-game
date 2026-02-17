@@ -186,6 +186,38 @@ body {
   background: #3367D6;
 }
 
+/* Leaderboard scrollable area — always-visible, styled scrollbar */
+.leaderboard-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--google-blue) rgba(60, 64, 67, 0.08);
+}
+
+.leaderboard-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-track {
+  background: rgba(60, 64, 67, 0.06);
+  border-radius: 3px;
+  margin: 8px 0;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--google-blue), #3367D6);
+  border-radius: 3px;
+  min-height: 40px;
+}
+
+.leaderboard-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #3367D6, #2A56C6);
+}
+
+.leaderboard-scroll::-webkit-scrollbar-thumb:active {
+  background: #2A56C6;
+}
+
 /* Google Material Design Buttons */
 .google-btn-primary {
   background-color: var(--google-blue);

@@ -35,8 +35,8 @@ export default function LeaderboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white flex items-center justify-center p-6">
-      <div className="w-full max-w-3xl">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white flex items-start justify-center p-4 py-8 overflow-y-auto leaderboard-scroll">
+      <div className="w-full max-w-3xl my-auto">
         {/* Header Card */}
         <div className="bg-white rounded-3xl p-8 google-shadow-lg mb-6">
           <div className="flex items-center justify-between mb-6">
