@@ -42,7 +42,9 @@ export async function getLeaderboardFromDb(): Promise<LeaderboardEntry[]> {
       return [];
     }
 
-    return data.sort((a, b) => a.reactionTime - b.reactionTime).slice(0, MAX_ENTRIES);
+    const sorted = data.sort((a, b) => a.reactionTime - b.reactionTime).slice(0, MAX_ENTRIES);
+    console.log('[DB] Leaderboard retrieved:', sorted.map(e => `${e.name}: ${e.reactionTime}ms`));
+    return sorted;
   } catch (error) {
     console.error('Error reading leaderboard from database:', error);
     return [];
@@ -106,16 +108,21 @@ export async function updateLeaderboardInDb(
     // Keep only top 3
     const topThree = leaderboard.slice(0, MAX_ENTRIES);
 
+    console.log('[DB] Saving to Redis:', topThree.map(e => `${e.name}: ${e.reactionTime}ms`));
+
     // Save to Redis
     await redis.set(LEADERBOARD_KEY, topThree);
 
-    // Find position of the current user (1-indexed)
-    const position = topThree.findIndex(entry =>
+    // Final defensive sort before returning (topThree is already sorted from line 104, but being extra safe)
+    const sortedTopThree = topThree.sort((a, b) => a.reactionTime - b.reactionTime);
+
+    // Find position of the current user AFTER sorting (1-indexed)
+    const position = sortedTopThree.findIndex(entry =>
       entry.name === name && entry.phone === phone
     );
 
     return {
-      leaderboard: topThree,
+      leaderboard: sortedTopThree,
       position: position >= 0 ? position + 1 : null,
     };
   } catch (error) {
