@@ -17,17 +17,27 @@ export function useLeaderboard() {
   const lastUpdateRef = useRef<number>(0);
 
   // Fetch leaderboard from API
-  const fetchLeaderboard = useCallback(async () => {
+  const fetchLeaderboard = useCallback(async (skipIfRecent = false) => {
     try {
+      // Skip fetch if we just updated recently (within last 2 seconds)
+      if (skipIfRecent && Date.now() - lastUpdateRef.current < 2000) {
+        return;
+      }
+
       const response = await fetch('/api/leaderboard', {
         cache: 'no-store', // Don't cache, always get fresh data
       });
 
       if (response.ok) {
         const data = await response.json();
-        setLeaderboard(data.leaderboard || []);
+
+        // Only update if we haven't updated locally very recently
+        // This prevents polling from overwriting a just-submitted score
+        if (Date.now() - lastUpdateRef.current > 1000) {
+          setLeaderboard(data.leaderboard || []);
+        }
+
         setIsConnected(true);
-        lastUpdateRef.current = Date.now();
       } else {
         console.error('Failed to fetch leaderboard:', response.status);
         setIsConnected(false);
@@ -43,11 +53,11 @@ export function useLeaderboard() {
   // Initialize polling
   useEffect(() => {
     // Fetch immediately on mount
-    fetchLeaderboard();
+    fetchLeaderboard(false);
 
-    // Set up polling interval
+    // Set up polling interval - skip fetch if we just updated
     pollingIntervalRef.current = setInterval(() => {
-      fetchLeaderboard();
+      fetchLeaderboard(true);
     }, POLL_INTERVAL);
 
     return () => {
@@ -84,9 +94,15 @@ export function useLeaderboard() {
         if (response.ok) {
           const data = await response.json();
 
-          // Immediately update local state
-          setLeaderboard(data.leaderboard);
+          // Immediately update local state and mark the update time
+          // This prevents polling from overwriting this fresh data
           lastUpdateRef.current = Date.now();
+          setLeaderboard(data.leaderboard);
+
+          // Wait a bit then fetch fresh data to ensure consistency
+          setTimeout(() => {
+            fetchLeaderboard(false);
+          }, 3000);
 
           return {
             position: data.position,
@@ -100,7 +116,7 @@ export function useLeaderboard() {
         return { position: null, leaderboard: [] };
       }
     },
-    []
+    [fetchLeaderboard]
   );
 
   return {
