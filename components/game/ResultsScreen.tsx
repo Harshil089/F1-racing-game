@@ -146,7 +146,7 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 text-center border border-google-blue/20">
                 <p className="text-google-grey text-sm font-medium mb-2">🏆 Best Time</p>
                 <p className="text-4xl font-bold text-google-blue">
-                  {bestTime ? `${bestTime}ms` : '--'}
+                  {leaderboard.length > 0 ? `${leaderboard[0].reactionTime}ms` : bestTime ? `${bestTime}ms` : '--'}
                 </p>
               </div>
             </div>
