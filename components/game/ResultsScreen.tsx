@@ -19,9 +19,10 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
   const [leaderboardPosition, setLeaderboardPosition] = useState<number | null>(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [playerPhone, setPlayerPhone] = useState<string>('');
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
 
   // Use real-time leaderboard hook
-  const { leaderboard, isConnected, updateLeaderboard: updateLeaderboardRealtime } = useLeaderboard();
+  const { leaderboard, isConnected, isLoading, updateLeaderboard: updateLeaderboardRealtime } = useLeaderboard();
 
   const playerResult = results.find((r) => r.car.isPlayer);
   const playerReactionTime = playerResult?.car.reactionTime || 0;
@@ -69,10 +70,15 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
             setLeaderboardPosition(result.position);
             setIsNewRecord(result.position === 1 && result.leaderboard.length > 1);
           }
+          setScoreSubmitted(true);
         })
         .catch(error => {
           console.error('Error updating leaderboard:', error);
+          setScoreSubmitted(true); // Still mark as ready even on error
         });
+    } else {
+      // No submission needed (false start or no phone), mark as ready immediately
+      setScoreSubmitted(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerReactionTime, playerName, playerCarNumber]);
@@ -146,7 +152,11 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 text-center border border-google-blue/20">
                 <p className="text-google-grey text-sm font-medium mb-2">🏆 Best Time</p>
                 <p className="text-4xl font-bold text-google-blue">
-                  {leaderboard.length > 0 ? `${leaderboard[0].reactionTime}ms` : bestTime ? `${bestTime}ms` : '--'}
+                  {!scoreSubmitted || isLoading ? (
+                    <span className="animate-pulse">···</span>
+                  ) : leaderboard.length > 0 ? (
+                    `${leaderboard[0].reactionTime}ms`
+                  ) : '--'}
                 </p>
               </div>
             </div>
