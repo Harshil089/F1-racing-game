@@ -9,8 +9,19 @@ export default function GamePage() {
   const router = useRouter();
   const [showThumbGate, setShowThumbGate] = useState(true);
   const [playerData, setPlayerData] = useState<{ name: string; carNumber: number } | null>(null);
+  const [deviceType, setDeviceType] = useState<'mobile' | 'laptop'>('mobile');
 
   useEffect(() => {
+    // Load device type from localStorage
+    const storedDeviceType = localStorage.getItem('deviceType') as 'mobile' | 'laptop' | null;
+    if (storedDeviceType) {
+      setDeviceType(storedDeviceType);
+      // Skip ThumbGate for laptop users
+      if (storedDeviceType === 'laptop') {
+        setShowThumbGate(false);
+      }
+    }
+
     // Load player data from localStorage
     const stored = localStorage.getItem('playerData');
 
@@ -46,9 +57,11 @@ export default function GamePage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white">
-      {showThumbGate && <ThumbGate onThumbDetected={handleThumbDetected} />}
+      {/* Only show ThumbGate for mobile users */}
+      {showThumbGate && deviceType === 'mobile' && <ThumbGate onThumbDetected={handleThumbDetected} />}
 
-      {!showThumbGate && (
+      {/* Show RaceTrack when: laptop user OR mobile user who passed ThumbGate */}
+      {(deviceType === 'laptop' || !showThumbGate) && (
         <RaceTrack playerName={playerData.name} playerCarNumber={playerData.carNumber} />
       )}
     </main>
