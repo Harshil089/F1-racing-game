@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
         success: true,
         leaderboard: result.leaderboard,
         position: result.position,
+        isCurrentTime: result.isCurrentTime,
       },
       { status: 200 }
     );

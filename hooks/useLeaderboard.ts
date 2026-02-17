@@ -100,7 +100,7 @@ export function useLeaderboard() {
       phone: string,
       reactionTime: number,
       carNumber: number
-    ): Promise<{ position: number | null; leaderboard: LeaderboardEntry[] }> => {
+    ): Promise<{ position: number | null; leaderboard: LeaderboardEntry[]; isCurrentTime: boolean }> => {
       // Mark that an update is in progress
       // This prevents polling from overwriting the update
       isUpdatingRef.current = true;
@@ -139,17 +139,18 @@ export function useLeaderboard() {
           return {
             position: data.position,
             leaderboard: data.leaderboard,
+            isCurrentTime: data.isCurrentTime ?? false,
           };
         }
 
         // If update failed, allow polling to resume immediately
         isUpdatingRef.current = false;
-        return { position: null, leaderboard: [] };
+        return { position: null, leaderboard: [], isCurrentTime: false };
       } catch (error) {
         console.error('Error updating leaderboard:', error);
         // If update failed, allow polling to resume immediately
         isUpdatingRef.current = false;
-        return { position: null, leaderboard: [] };
+        return { position: null, leaderboard: [], isCurrentTime: false };
       }
     },
     []
