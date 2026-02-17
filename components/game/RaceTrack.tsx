@@ -38,10 +38,19 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   });
   const [lightsOutTimestamp, setLightsOutTimestamp] = useState<number>(0);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [deviceType, setDeviceType] = useState<'mobile' | 'laptop'>('mobile');
 
   // Refs to track timeouts and intervals for cleanup
   const lightIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lightsOutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Load device type from localStorage
+  useEffect(() => {
+    const storedDeviceType = localStorage.getItem('deviceType') as 'mobile' | 'laptop' | null;
+    if (storedDeviceType) {
+      setDeviceType(storedDeviceType);
+    }
+  }, []);
 
   // Initialize cars
   useEffect(() => {
@@ -135,8 +144,10 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
     lightIntervalRef.current = lightInterval;
   }, []);
 
-  // Handle touch events
+  // Handle touch events (for mobile)
   useEffect(() => {
+    if (deviceType !== 'mobile') return;
+
     const handleTouchEnd = (e: TouchEvent) => {
       // Only prevent default for canvas touches, not button clicks
       const target = e.target as HTMLElement;
@@ -206,7 +217,90 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
     return () => {
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [gameState, lightsState, lightsOutTimestamp, startLightsSequence]);
+  }, [gameState, lightsState, lightsOutTimestamp, startLightsSequence, deviceType]);
+
+  // Handle keyboard events (for laptop)
+  useEffect(() => {
+    if (deviceType !== 'laptop') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only respond to spacebar
+      if (e.code !== 'Space') return;
+
+      e.preventDefault();
+
+      if (gameState === 'ready') {
+        // Start the lights sequence
+        startLightsSequence();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // Only respond to spacebar
+      if (e.code !== 'Space') return;
+
+      e.preventDefault();
+
+      if (gameState === 'countdown') {
+        // False start - released too early
+        if (!lightsState.allOut) {
+          // Clear any pending timeouts to prevent lights out transition
+          if (lightsOutTimeoutRef.current) {
+            clearTimeout(lightsOutTimeoutRef.current);
+            lightsOutTimeoutRef.current = null;
+          }
+          if (lightIntervalRef.current) {
+            clearInterval(lightIntervalRef.current);
+            lightIntervalRef.current = null;
+          }
+
+          // Cancel any scheduled animation frames
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = undefined;
+          }
+
+          // Set false start state
+          setLightsState((prev) => ({ ...prev, falseStart: true }));
+          setGameState('finished');
+          audioEngine.vibrate(100);
+
+          // Set player car with penalty
+          setCars((prevCars) =>
+            prevCars.map((car) =>
+              car.isPlayer
+                ? { ...car, reactionTime: 999, speed: 0 }
+                : car
+            )
+          );
+        }
+      } else if (gameState === 'racing' && lightsState.allOut) {
+        // Valid start - release after lights out
+        const releaseTime = Date.now();
+        const reactionTime = releaseTime - lightsOutTimestamp;
+
+        setCars((prevCars) =>
+          prevCars.map((car) =>
+            car.isPlayer
+              ? {
+                  ...car,
+                  reactionTime,
+                  speed: calculateSpeed(reactionTime),
+                }
+              : car
+          )
+        );
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [gameState, lightsState, lightsOutTimestamp, startLightsSequence, deviceType]);
 
   // Game loop
   useEffect(() => {
@@ -320,14 +414,14 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
           {gameState === 'ready' && (
             <div className="bg-white/95 px-6 py-3 rounded-full google-shadow-lg">
               <p className="text-2xl font-bold text-google-blue animate-pulse">
-                👆 TOUCH TO START
+                {deviceType === 'mobile' ? '👆 TOUCH TO START' : '⌨️ PRESS SPACEBAR TO START'}
               </p>
             </div>
           )}
           {gameState === 'countdown' && !lightsState.allOut && (
             <div className="bg-white/95 px-6 py-3 rounded-full google-shadow mt-24">
               <p className="text-lg text-google-grey">
-                🤚 Keep your thumb pressed...
+                {deviceType === 'mobile' ? '🤚 Keep your thumb pressed...' : '⌨️ Keep spacebar pressed...'}
               </p>
             </div>
           )}
@@ -346,6 +440,13 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
           <p className="font-bold text-google-blue flex items-center gap-1">
             <span className="text-google-red">#{playerCarNumber}</span>
             <span className="text-google-grey">{playerName}</span>
+          </p>
+        </div>
+
+        {/* Device Type Indicator */}
+        <div className="absolute bottom-4 right-4 bg-white px-4 py-2 rounded-xl google-shadow">
+          <p className="text-xs text-gray-500 flex items-center gap-1">
+            {deviceType === 'mobile' ? '📱 Mobile' : '💻 Laptop'}
           </p>
         </div>
       </div>
@@ -368,6 +469,14 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
  */
 function FalseStartScreen() {
   const router = useRouter();
+  const [deviceType, setDeviceTypeLocal] = useState<'mobile' | 'laptop'>('mobile');
+
+  useEffect(() => {
+    const storedDeviceType = localStorage.getItem('deviceType') as 'mobile' | 'laptop' | null;
+    if (storedDeviceType) {
+      setDeviceTypeLocal(storedDeviceType);
+    }
+  }, []);
 
   const handleRaceAgain = () => {
     window.location.reload();
@@ -392,7 +501,9 @@ function FalseStartScreen() {
               FALSE START!
             </h2>
             <p className="text-xl text-google-grey mb-2">
-              You released your thumb too early
+              {deviceType === 'mobile'
+                ? 'You released your thumb too early'
+                : 'You released the spacebar too early'}
             </p>
             <p className="text-base text-gray-500">
               Wait for all lights to go out before releasing
@@ -426,7 +537,9 @@ function FalseStartScreen() {
           {/* Tip - Google Info Style */}
           <div className="mt-6 bg-blue-50 rounded-lg p-4">
             <p className="text-sm text-google-grey">
-              💡 <strong>Tip:</strong> Keep your finger pressed until you see the "GO! GO! GO!" message
+              💡 <strong>Tip:</strong> {deviceType === 'mobile'
+                ? 'Keep your finger pressed until you see the "GO! GO! GO!" message'
+                : 'Keep the spacebar pressed until you see the "GO! GO! GO!" message'}
             </p>
           </div>
         </div>

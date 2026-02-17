@@ -1,6 +1,16 @@
+'use client';
+
+import { useState } from 'react';
+import DeviceSelection from '@/components/registration/DeviceSelection';
 import RegistrationForm from '@/components/registration/RegistrationForm';
 
 export default function HomePage() {
+  const [deviceSelected, setDeviceSelected] = useState(false);
+
+  const handleDeviceSelected = (deviceType: 'mobile' | 'laptop') => {
+    setDeviceSelected(true);
+  };
+
   return (
     <main className="min-h-screen f1-grid-bg flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
@@ -34,14 +44,18 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Registration Form */}
-        <RegistrationForm />
+        {/* Show Device Selection first, then Registration Form */}
+        {!deviceSelected ? (
+          <DeviceSelection onDeviceSelected={handleDeviceSelected} />
+        ) : (
+          <RegistrationForm />
+        )}
 
         {/* Footer Info */}
         <div className="mt-12 text-center text-gray-500 text-sm slide-in">
           <p className="flex items-center justify-center gap-2 flex-wrap">
-            <span className="google-badge google-badge-primary">Mobile optimized</span>
-            <span className="google-badge google-badge-success">Touch to race</span>
+            <span className="google-badge google-badge-primary">Mobile & Desktop</span>
+            <span className="google-badge google-badge-success">Fast reactions</span>
             <span className="google-badge google-badge-warning">Best reaction wins</span>
           </p>
         </div>
