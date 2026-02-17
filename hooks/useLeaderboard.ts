@@ -1,135 +1,63 @@
 /**
- * Custom hook for real-time leaderboard updates using Socket.IO
+ * Custom hook for leaderboard updates using polling
+ * Compatible with Vercel serverless deployment
  */
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { LeaderboardEntry } from '@/lib/leaderboard';
 
-// Dynamically import socket.io-client only on client side
-let ioClient: any = null;
-if (typeof window !== 'undefined') {
-  import('socket.io-client').then((module) => {
-    ioClient = module.io;
-  });
-}
+const POLL_INTERVAL = 3000; // Poll every 3 seconds
 
 export function useLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(true); // Always "connected" for polling
   const [isLoading, setIsLoading] = useState(true);
-  const socketRef = useRef<any>(null);
-  const initializingRef = useRef(false);
-
-  // Initialize socket connection
-  useEffect(() => {
-    // Prevent multiple initializations
-    if (initializingRef.current || socketRef.current) {
-      return;
-    }
-
-    const initSocket = async () => {
-      // Wait for client-side only
-      if (typeof window === 'undefined') return;
-
-      // Wait for io to be loaded
-      let attempts = 0;
-      while (!ioClient && attempts < 50) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        attempts++;
-      }
-
-      if (!ioClient) {
-        console.error('Failed to load socket.io-client');
-        return;
-      }
-
-      initializingRef.current = true;
-
-      try {
-        // Use the current window location for the socket connection
-        // This works for both local development and production (Vercel)
-        const socketUrl = window.location.origin;
-
-        const socket = ioClient(socketUrl, {
-          path: '/socket.io',
-          transports: ['websocket', 'polling'],
-          reconnection: true,
-          reconnectionAttempts: 10,
-          reconnectionDelay: 1000,
-          timeout: 10000,
-        });
-
-        socket.on('connect', () => {
-          console.log('✅ Socket connected:', socket.id);
-          console.log('📡 Connected to:', socketUrl);
-          console.log('🌐 Transport:', socket.io.engine.transport.name);
-          setIsConnected(true);
-        });
-
-        socket.on('disconnect', (reason: string) => {
-          console.log('❌ Socket disconnected:', reason);
-          console.log('📍 Was connected to:', socketUrl);
-          setIsConnected(false);
-        });
-
-        socket.on('connect_error', (error: Error) => {
-          console.error('❌ Socket connection error:', error.message);
-          console.error('🔗 Attempted URL:', socketUrl);
-          console.error('📱 User Agent:', navigator.userAgent);
-          console.error('🌐 Full error:', error);
-          setIsConnected(false);
-        });
-
-        socket.on('error', (error: Error) => {
-          console.error('❌ Socket error:', error);
-          console.error('📍 Socket URL:', socketUrl);
-        });
-
-        socket.on('leaderboard:updated', (data: { leaderboard: LeaderboardEntry[] }) => {
-          console.log('📊 Leaderboard updated:', data);
-          setLeaderboard(data.leaderboard);
-        });
-
-        socketRef.current = socket;
-      } catch (error) {
-        console.error('Error initializing socket:', error);
-        initializingRef.current = false;
-      }
-    };
-
-    initSocket();
-
-    // Fetch initial leaderboard
-    fetchLeaderboard();
-
-    return () => {
-      // Clean up on unmount
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-        initializingRef.current = false;
-      }
-    };
-  }, []);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastUpdateRef = useRef<number>(0);
 
   // Fetch leaderboard from API
   const fetchLeaderboard = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const response = await fetch('/api/leaderboard');
+      const response = await fetch('/api/leaderboard', {
+        cache: 'no-store', // Don't cache, always get fresh data
+      });
+
       if (response.ok) {
         const data = await response.json();
         setLeaderboard(data.leaderboard || []);
+        setIsConnected(true);
+        lastUpdateRef.current = Date.now();
       } else {
         console.error('Failed to fetch leaderboard:', response.status);
+        setIsConnected(false);
       }
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+      setIsConnected(false);
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  // Initialize polling
+  useEffect(() => {
+    // Fetch immediately on mount
+    fetchLeaderboard();
+
+    // Set up polling interval
+    pollingIntervalRef.current = setInterval(() => {
+      fetchLeaderboard();
+    }, POLL_INTERVAL);
+
+    return () => {
+      // Clean up on unmount
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [fetchLeaderboard]);
 
   // Update leaderboard with new score
   const updateLeaderboard = useCallback(
@@ -156,12 +84,9 @@ export function useLeaderboard() {
         if (response.ok) {
           const data = await response.json();
 
-          // Broadcast update to all connected clients
-          if (socketRef.current && socketRef.current.connected) {
-            socketRef.current.emit('leaderboard:update', {
-              leaderboard: data.leaderboard,
-            });
-          }
+          // Immediately update local state
+          setLeaderboard(data.leaderboard);
+          lastUpdateRef.current = Date.now();
 
           return {
             position: data.position,
