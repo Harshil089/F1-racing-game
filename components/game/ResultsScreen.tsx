@@ -148,7 +148,7 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
                 </p>
               )}
               <p className="text-sm font-bold text-black mt-3">
-                Visit Google Developer Group club catalyst stall to claim your reward.
+                Visit Google Developer Group Club Catalyst Stall to claim your reward.
               </p>
             </div>
 
