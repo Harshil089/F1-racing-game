@@ -46,9 +46,9 @@ export default function StartLights({ lightsState, canvasWidth }: StartLightsPro
       ctx.arc(x, y, START_LIGHTS.RADIUS, 0, Math.PI * 2);
       ctx.fill();
 
-      // Draw light outline
-      ctx.strokeStyle = '#555555';
-      ctx.lineWidth = 2;
+      // Draw light outline - Google style
+      ctx.strokeStyle = isOn ? '#D93025' : '#DADCE0';
+      ctx.lineWidth = 3;
       ctx.stroke();
 
       // Reset shadow

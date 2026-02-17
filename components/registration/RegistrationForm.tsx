@@ -94,95 +94,110 @@ export default function RegistrationForm() {
 
   return (
     <div className="w-full max-w-md mx-auto px-6 slide-in">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Name Field */}
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium mb-2">
-            Driver Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 bg-f1-gray border-2 ${
-              errors.name ? 'border-f1-red' : 'border-f1-gray'
-            } rounded-lg focus:outline-none focus:border-f1-red transition-colors text-white`}
-            placeholder="Enter your name"
-            maxLength={50}
-          />
-          {errors.name && (
-            <p className="mt-1 text-sm text-f1-red">{errors.name}</p>
-          )}
-        </div>
-
-        {/* Phone Field */}
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium mb-2">
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 bg-f1-gray border-2 ${
-              errors.phone ? 'border-f1-red' : 'border-f1-gray'
-            } rounded-lg focus:outline-none focus:border-f1-red transition-colors text-white`}
-            placeholder="Enter phone number"
-            maxLength={15}
-          />
-          {errors.phone && (
-            <p className="mt-1 text-sm text-f1-red">{errors.phone}</p>
-          )}
-        </div>
-
-        {/* Car Number Field */}
-        <div>
-          <label htmlFor="carNumber" className="block text-sm font-medium mb-2">
-            Car Number (1-99)
-          </label>
-          <input
-            type="number"
-            id="carNumber"
-            name="carNumber"
-            value={formData.carNumber}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 bg-f1-gray border-2 ${
-              errors.carNumber ? 'border-f1-red' : 'border-f1-gray'
-            } rounded-lg focus:outline-none focus:border-f1-red transition-colors text-white`}
-            placeholder="Choose your number"
-            min="1"
-            max="99"
-          />
-          {errors.carNumber && (
-            <p className="mt-1 text-sm text-f1-red">{errors.carNumber}</p>
-          )}
-        </div>
-
-        {/* Submit Error */}
-        {errors.submit && (
-          <div className="p-3 bg-f1-red/10 border border-f1-red rounded-lg">
-            <p className="text-sm text-f1-red">{errors.submit}</p>
+      {/* Google-style card container */}
+      <div className="bg-white rounded-2xl p-8 google-shadow-lg">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name Field */}
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-google-grey mb-2">
+              Driver Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className={`google-input ${errors.name ? 'error' : ''}`}
+              placeholder="Enter your name"
+              maxLength={50}
+            />
+            {errors.name && (
+              <p className="mt-2 text-sm text-google-error flex items-center gap-1">
+                <span>⚠️</span> {errors.name}
+              </p>
+            )}
           </div>
-        )}
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`w-full py-4 bg-f1-red text-white font-bold text-lg rounded-lg
-            transition-all duration-300 ${
-              isSubmitting
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-red-600 pulse-animation'
-            }`}
-        >
-          {isSubmitting ? 'REGISTERING...' : 'START RACING'}
-        </button>
-      </form>
+          {/* Phone Field */}
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-google-grey mb-2">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className={`google-input ${errors.phone ? 'error' : ''}`}
+              placeholder="Enter phone number"
+              maxLength={15}
+            />
+            {errors.phone && (
+              <p className="mt-2 text-sm text-google-error flex items-center gap-1">
+                <span>⚠️</span> {errors.phone}
+              </p>
+            )}
+          </div>
+
+          {/* Car Number Field */}
+          <div>
+            <label htmlFor="carNumber" className="block text-sm font-medium text-google-grey mb-2">
+              Car Number (1-99)
+            </label>
+            <input
+              type="number"
+              id="carNumber"
+              name="carNumber"
+              value={formData.carNumber}
+              onChange={handleChange}
+              className={`google-input ${errors.carNumber ? 'error' : ''}`}
+              placeholder="Choose your number"
+              min="1"
+              max="99"
+            />
+            {errors.carNumber && (
+              <p className="mt-2 text-sm text-google-error flex items-center gap-1">
+                <span>⚠️</span> {errors.carNumber}
+              </p>
+            )}
+          </div>
+
+          {/* Submit Error Alert */}
+          {errors.submit && (
+            <div className="google-alert-error">
+              <p className="text-sm font-medium">❌ {errors.submit}</p>
+            </div>
+          )}
+
+          {/* Submit Button - Google Blue Primary */}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full py-4 text-lg font-medium rounded-lg transition-all duration-200
+              ${
+                isSubmitting
+                  ? 'opacity-50 cursor-not-allowed bg-gray-300 text-gray-500'
+                  : 'google-btn-primary'
+              }`}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                REGISTERING...
+              </span>
+            ) : (
+              '🏁 START RACING'
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Google-style helper text */}
+      <p className="mt-4 text-center text-xs text-gray-500">
+        Your information is stored locally and used only for this racing session
+      </p>
     </div>
   );
 }

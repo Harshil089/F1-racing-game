@@ -210,7 +210,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   }, [cars, canvasSize]);
 
   return (
-    <div className="relative w-full h-screen flex items-center justify-center bg-black">
+    <div className="relative w-full h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-white">
       {/* Start Lights */}
       {gameState === 'countdown' && (
         <StartLights lightsState={lightsState} canvasWidth={canvasSize.width} />
@@ -222,33 +222,40 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
           ref={canvasRef}
           width={canvasSize.width}
           height={canvasSize.height}
-          className="border-2 border-f1-gray rounded-lg"
+          className="border-4 border-google-blue/20 rounded-2xl google-shadow-lg bg-white"
         />
 
-        {/* Status Text */}
+        {/* Status Text - Google themed */}
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-center z-20">
           {gameState === 'ready' && (
-            <p className="text-2xl font-bold text-f1-neon neon-glow pulse-animation">
-              TOUCH TO START
-            </p>
+            <div className="bg-white/95 px-6 py-3 rounded-full google-shadow-lg">
+              <p className="text-2xl font-bold text-google-blue animate-pulse">
+                👆 TOUCH TO START
+              </p>
+            </div>
           )}
           {gameState === 'countdown' && !lightsState.allOut && (
-            <p className="text-xl text-gray-400 mt-24">
-              Keep your thumb pressed...
-            </p>
+            <div className="bg-white/95 px-6 py-3 rounded-full google-shadow mt-24">
+              <p className="text-lg text-google-grey">
+                🤚 Keep your thumb pressed...
+              </p>
+            </div>
           )}
           {gameState === 'racing' && lightsState.allOut && (
-            <p className="text-3xl font-bold text-f1-neon neon-glow mt-24">
-              GO! GO! GO!
-            </p>
+            <div className="bg-google-green/95 px-8 py-4 rounded-full google-shadow-lg mt-24">
+              <p className="text-3xl font-bold text-white">
+                🏁 GO! GO! GO!
+              </p>
+            </div>
           )}
         </div>
 
-        {/* Player Info */}
-        <div className="absolute bottom-4 left-4 bg-black/70 px-4 py-2 rounded-lg">
-          <p className="text-sm text-gray-400">Driver</p>
-          <p className="font-bold text-f1-red">
-            #{playerCarNumber} {playerName}
+        {/* Player Info - Google Card Style */}
+        <div className="absolute bottom-4 left-4 bg-white px-4 py-3 rounded-xl google-shadow">
+          <p className="text-xs text-gray-500 font-medium">DRIVER</p>
+          <p className="font-bold text-google-blue flex items-center gap-1">
+            <span className="text-google-red">#{playerCarNumber}</span>
+            <span className="text-google-grey">{playerName}</span>
           </p>
         </div>
       </div>
@@ -282,51 +289,56 @@ function FalseStartScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 fade-in">
-      <div className="w-full max-w-2xl px-6 py-8 text-center">
-        {/* False Start Icon */}
-        <div className="text-8xl mb-6">🚫</div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/98 backdrop-blur-sm fade-in">
+      <div className="w-full max-w-2xl px-6 py-8">
+        {/* Google-style card */}
+        <div className="bg-white rounded-3xl p-8 google-shadow-lg text-center">
+          {/* False Start Icon */}
+          <div className="text-8xl mb-6">🚫</div>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h2 className="text-6xl font-bold mb-4 text-f1-red neon-glow-red">
-            FALSE START!
-          </h2>
-          <p className="text-2xl text-gray-300 mb-2">
-            You released your thumb too early
-          </p>
-          <p className="text-lg text-gray-500">
-            Wait for all lights to go out before releasing
-          </p>
-        </div>
+          {/* Header */}
+          <div className="mb-8">
+            <h2 className="text-5xl font-bold mb-4 text-google-red">
+              FALSE START!
+            </h2>
+            <p className="text-xl text-google-grey mb-2">
+              You released your thumb too early
+            </p>
+            <p className="text-base text-gray-500">
+              Wait for all lights to go out before releasing
+            </p>
+          </div>
 
-        {/* Penalty Notice */}
-        <div className="bg-f1-red/20 border-2 border-f1-red rounded-lg p-6 mb-8">
-          <p className="text-xl font-bold text-f1-red mb-2">⚠️ PENALTY</p>
-          <p className="text-gray-300">
-            In Formula 1, a false start results in a time penalty or disqualification.
-          </p>
-        </div>
+          {/* Penalty Notice - Google Alert Style */}
+          <div className="google-alert-error mb-8">
+            <p className="text-lg font-bold text-google-red mb-2">⚠️ PENALTY</p>
+            <p className="text-google-grey">
+              In Formula 1, a false start results in a time penalty or disqualification.
+            </p>
+          </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={handleRaceAgain}
-            className="py-4 bg-f1-red text-white font-bold rounded-lg hover:bg-red-600 transition-colors text-lg"
-          >
-            🏁 TRY AGAIN
-          </button>
-          <button
-            onClick={handleNewPlayer}
-            className="py-4 bg-f1-gray text-white font-bold rounded-lg hover:bg-gray-700 transition-colors border-2 border-f1-gray text-lg"
-          >
-            👤 NEW PLAYER
-          </button>
-        </div>
+          {/* Action Buttons - Google Style */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={handleRaceAgain}
+              className="google-btn-primary py-4 text-lg"
+            >
+              🔄 TRY AGAIN
+            </button>
+            <button
+              onClick={handleNewPlayer}
+              className="google-btn-secondary py-4 text-lg"
+            >
+              👤 NEW PLAYER
+            </button>
+          </div>
 
-        {/* Tip */}
-        <div className="mt-6 text-sm text-gray-500">
-          💡 Tip: Keep your finger pressed until you see the "GO! GO! GO!" message
+          {/* Tip - Google Info Style */}
+          <div className="mt-6 bg-blue-50 rounded-lg p-4">
+            <p className="text-sm text-google-grey">
+              💡 <strong>Tip:</strong> Keep your finger pressed until you see the "GO! GO! GO!" message
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -35,14 +35,17 @@ export default function GamePage() {
 
   if (!playerData) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <p className="text-white">Loading...</p>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 border-google-blue border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-google-grey font-medium">Loading race data...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-white">
       {showThumbGate && <ThumbGate onThumbDetected={handleThumbDetected} />}
 
       {!showThumbGate && (

@@ -1,6 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* Google Brand Colors */
+  --google-blue: #4285F4;
+  --google-red: #EA4335;
+  --google-yellow: #FBBC05;
+  --google-green: #34A853;
+  --google-grey: #3C4043;
+  --google-white: #FFFFFF;
+  --google-error: #B00020;
+
+  /* Semantic mappings for racing context */
+  --primary-color: var(--google-blue);
+  --success-color: var(--google-green);
+  --warning-color: var(--google-yellow);
+  --danger-color: var(--google-red);
+  --text-primary: var(--google-white);
+  --text-secondary: var(--google-grey);
+}
 
 * {
   margin: 0;
@@ -18,28 +39,32 @@ body {
 }
 
 body {
-  background-color: #000000;
-  color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  touch-action: none; /* Prevent touch scrolling/zooming */
+  background-color: var(--google-white);
+  color: var(--google-grey);
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* F1 Grid Background Pattern */
+/* Google-inspired Grid Background */
 .f1-grid-bg {
-  background-color: #000000;
+  background-color: var(--google-white);
   background-image:
-    linear-gradient(rgba(220, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(220, 0, 0, 0.1) 1px, transparent 1px);
+    linear-gradient(rgba(66, 133, 244, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(66, 133, 244, 0.05) 1px, transparent 1px);
   background-size: 50px 50px;
   background-position: center center;
 }
 
-/* Animated gradient background */
+/* Google Material Gradient */
 .f1-gradient-bg {
-  background: linear-gradient(135deg, #000000 0%, #1a0000 50%, #000000 100%);
+  background: linear-gradient(135deg,
+    var(--google-white) 0%,
+    rgba(66, 133, 244, 0.08) 50%,
+    var(--google-white) 100%
+  );
   background-size: 200% 200%;
   animation: gradientShift 10s ease infinite;
 }
@@ -53,19 +78,31 @@ body {
   }
 }
 
-/* Neon glow effect */
+/* Google-style text effects */
 .neon-glow {
+  color: var(--google-green);
   text-shadow:
-    0 0 5px rgba(0, 255, 65, 0.5),
-    0 0 10px rgba(0, 255, 65, 0.3),
-    0 0 15px rgba(0, 255, 65, 0.2);
+    0 0 10px rgba(52, 168, 83, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .neon-glow-red {
+  color: var(--google-red);
   text-shadow:
-    0 0 5px rgba(220, 0, 0, 0.5),
-    0 0 10px rgba(220, 0, 0, 0.3),
-    0 0 15px rgba(220, 0, 0, 0.2);
+    0 0 10px rgba(234, 67, 53, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.google-shadow {
+  box-shadow:
+    0 1px 2px 0 rgba(60, 64, 67, 0.3),
+    0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.google-shadow-lg {
+  box-shadow:
+    0 1px 3px 0 rgba(60, 64, 67, 0.3),
+    0 4px 8px 3px rgba(60, 64, 67, 0.15);
 }
 
 /* Button pulse animation */
@@ -126,20 +163,158 @@ body {
   animation: fadeOut 0.3s ease-out forwards;
 }
 
-/* Custom scrollbar (for desktop testing) */
+/* Google-style scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: rgba(60, 64, 67, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #DC0000;
+  background: var(--google-blue);
   border-radius: 4px;
+  transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff0000;
+  background: #3367D6;
+}
+
+/* Google Material Design Buttons */
+.google-btn-primary {
+  background-color: var(--google-blue);
+  color: var(--google-white);
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.google-btn-primary:hover {
+  background-color: #3367D6;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  transform: translateY(-1px);
+}
+
+.google-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+.google-btn-success {
+  background-color: var(--google-green);
+  color: var(--google-white);
+}
+
+.google-btn-success:hover {
+  background-color: #2D9348;
+}
+
+.google-btn-danger {
+  background-color: var(--google-red);
+  color: var(--google-white);
+}
+
+.google-btn-danger:hover {
+  background-color: #D33B2C;
+}
+
+.google-btn-secondary {
+  background-color: transparent;
+  color: var(--google-blue);
+  border: 1px solid rgba(66, 133, 244, 0.5);
+}
+
+.google-btn-secondary:hover {
+  background-color: rgba(66, 133, 244, 0.08);
+  border-color: var(--google-blue);
+}
+
+/* Google-style input fields */
+.google-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(60, 64, 67, 0.3);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--google-grey);
+  background-color: var(--google-white);
+  transition: all 0.2s;
+  outline: none;
+}
+
+.google-input:focus {
+  border-color: var(--google-blue);
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.google-input:hover:not(:focus) {
+  border-color: rgba(60, 64, 67, 0.5);
+}
+
+.google-input.error {
+  border-color: var(--google-error);
+}
+
+.google-input.error:focus {
+  box-shadow: 0 0 0 2px rgba(176, 0, 32, 0.2);
+}
+
+/* Alert/Badge components */
+.google-alert-success {
+  background-color: rgba(52, 168, 83, 0.1);
+  border-left: 4px solid var(--google-green);
+  color: var(--google-grey);
+  padding: 12px 16px;
+  border-radius: 4px;
+}
+
+.google-alert-error {
+  background-color: rgba(234, 67, 53, 0.1);
+  border-left: 4px solid var(--google-red);
+  color: var(--google-grey);
+  padding: 12px 16px;
+  border-radius: 4px;
+}
+
+.google-alert-warning {
+  background-color: rgba(251, 188, 5, 0.1);
+  border-left: 4px solid var(--google-yellow);
+  color: var(--google-grey);
+  padding: 12px 16px;
+  border-radius: 4px;
+}
+
+.google-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.google-badge-primary {
+  background-color: rgba(66, 133, 244, 0.1);
+  color: var(--google-blue);
+}
+
+.google-badge-success {
+  background-color: rgba(52, 168, 83, 0.1);
+  color: var(--google-green);
+}
+
+.google-badge-warning {
+  background-color: rgba(251, 188, 5, 0.2);
+  color: #F29900;
+}
+
+.google-badge-danger {
+  background-color: rgba(234, 67, 53, 0.1);
+  color: var(--google-red);
 }

@@ -60,101 +60,121 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
   const getPositionColor = (position: number) => {
     switch (position) {
       case 1:
-        return 'text-yellow-400';
+        return 'text-google-yellow';
       case 2:
-        return 'text-gray-300';
+        return 'text-gray-400';
       case 3:
-        return 'text-orange-400';
+        return 'text-orange-500';
       default:
-        return 'text-gray-500';
+        return 'text-google-grey';
+    }
+  };
+
+  const getPositionBgColor = (position: number) => {
+    switch (position) {
+      case 1:
+        return 'bg-google-yellow/10 border-google-yellow';
+      case 2:
+        return 'bg-gray-200 border-gray-400';
+      case 3:
+        return 'bg-orange-100 border-orange-500';
+      default:
+        return 'bg-google-grey/10 border-google-grey/30';
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/98 backdrop-blur-sm fade-in">
       <div className="w-full max-w-2xl px-6 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="text-6xl mb-4">{getPositionEmoji(playerPosition)}</div>
-          <h2 className="text-5xl font-bold mb-2 neon-glow-red">
-            {playerPosition === 1 ? 'VICTORY!' : playerPosition <= 3 ? 'PODIUM!' : 'RACE COMPLETE'}
-          </h2>
-          <p className={`text-3xl font-bold ${getPositionColor(playerPosition)}`}>
-            {playerPosition}{playerPosition === 1 ? 'st' : playerPosition === 2 ? 'nd' : playerPosition === 3 ? 'rd' : 'th'} PLACE
-          </p>
-        </div>
+        {/* Google-style Results Card */}
+        <div className="bg-white rounded-3xl p-8 google-shadow-lg">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="text-7xl mb-4">{getPositionEmoji(playerPosition)}</div>
+            <h2 className="text-5xl font-bold mb-3 text-google-blue">
+              {playerPosition === 1 ? 'VICTORY!' : playerPosition <= 3 ? 'PODIUM!' : 'RACE COMPLETE'}
+            </h2>
+            <div className={`inline-block px-6 py-2 rounded-full border-2 ${getPositionBgColor(playerPosition)}`}>
+              <p className={`text-2xl font-bold ${getPositionColor(playerPosition)}`}>
+                {playerPosition}{playerPosition === 1 ? 'st' : playerPosition === 2 ? 'nd' : playerPosition === 3 ? 'rd' : 'th'} PLACE
+              </p>
+            </div>
+          </div>
 
-        {/* Player Stats */}
-        <div className="bg-f1-gray border-2 border-f1-red rounded-lg p-6 mb-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="text-center">
-              <p className="text-gray-400 text-sm mb-1">Reaction Time</p>
-              <p className="text-3xl font-bold text-f1-neon">
+          {/* Player Stats - Google Cards */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 text-center border border-google-green/20">
+              <p className="text-google-grey text-sm font-medium mb-2">⚡ Reaction Time</p>
+              <p className="text-4xl font-bold text-google-green">
                 {playerReactionTime}ms
               </p>
             </div>
-            <div className="text-center">
-              <p className="text-gray-400 text-sm mb-1">Best Time</p>
-              <p className="text-3xl font-bold text-f1-red">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 text-center border border-google-blue/20">
+              <p className="text-google-grey text-sm font-medium mb-2">🏆 Best Time</p>
+              <p className="text-4xl font-bold text-google-blue">
                 {bestTime ? `${bestTime}ms` : '--'}
               </p>
             </div>
           </div>
-        </div>
 
-        {/* Leaderboard */}
-        <div className="bg-f1-gray rounded-lg p-6 mb-8 max-h-64 overflow-y-auto">
-          <h3 className="text-xl font-bold mb-4 text-center">Race Results</h3>
-          <div className="space-y-3">
-            {results.map((result) => (
-              <div
-                key={result.car.id}
-                className={`flex items-center justify-between p-3 rounded ${
-                  result.car.isPlayer
-                    ? 'bg-f1-red/20 border-2 border-f1-red'
-                    : 'bg-black/50'
-                }`}
-              >
-                <div className="flex items-center gap-4 flex-1">
-                  <span className={`text-2xl font-bold w-8 ${getPositionColor(result.position)}`}>
-                    {result.position}
-                  </span>
-                  <div
-                    className="w-4 h-4 rounded-full"
-                    style={{ backgroundColor: result.car.color }}
-                  />
-                  <div className="flex-1">
-                    <p className="font-bold">
-                      {result.car.name}
-                      {result.car.isPlayer && ' (YOU)'}
+          {/* Leaderboard - Google Style */}
+          <div className="bg-gray-50 rounded-2xl p-6 mb-6 max-h-80 overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4 text-google-grey flex items-center justify-center gap-2">
+              <span>🏁</span> Race Results
+            </h3>
+            <div className="space-y-2">
+              {results.map((result) => (
+                <div
+                  key={result.car.id}
+                  className={`flex items-center justify-between p-4 rounded-xl transition-all ${
+                    result.car.isPlayer
+                      ? 'bg-google-blue/10 border-2 border-google-blue google-shadow'
+                      : 'bg-white border border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <span className={`text-2xl font-bold w-8 ${getPositionColor(result.position)}`}>
+                      {result.position}
+                    </span>
+                    <div
+                      className="w-5 h-5 rounded-full border-2 border-white google-shadow"
+                      style={{ backgroundColor: result.car.color }}
+                    />
+                    <div className="flex-1">
+                      <p className="font-bold text-google-grey">
+                        {result.car.name}
+                        {result.car.isPlayer && (
+                          <span className="ml-2 google-badge google-badge-primary">YOU</span>
+                        )}
+                      </p>
+                      <p className="text-sm text-gray-500">Car #{result.car.carNumber}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono text-xl font-bold text-google-green">
+                      {result.car.reactionTime}ms
                     </p>
-                    <p className="text-sm text-gray-400">Car #{result.car.carNumber}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-mono text-lg font-bold text-f1-neon">
-                    {result.car.reactionTime}ms
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={handleRaceAgain}
-            className="py-4 bg-f1-red text-white font-bold rounded-lg hover:bg-red-600 transition-colors"
-          >
-            🏁 RACE AGAIN
-          </button>
-          <button
-            onClick={handleNewPlayer}
-            className="py-4 bg-f1-gray text-white font-bold rounded-lg hover:bg-gray-700 transition-colors border-2 border-f1-gray"
-          >
-            👤 NEW PLAYER
-          </button>
+          {/* Action Buttons - Google Style */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={handleRaceAgain}
+              className="google-btn-primary py-4 text-lg"
+            >
+              🔄 RACE AGAIN
+            </button>
+            <button
+              onClick={handleNewPlayer}
+              className="google-btn-secondary py-4 text-lg"
+            >
+              👤 NEW PLAYER
+            </button>
+          </div>
         </div>
       </div>
     </div>

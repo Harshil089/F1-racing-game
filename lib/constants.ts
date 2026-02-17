@@ -14,61 +14,63 @@ export const GAME_CONFIG: GameConfig = {
   BASE_SPEED: 2,               // Base movement speed
 };
 
-// F1-themed bot drivers (fictional names)
+// F1-themed bot drivers (fictional names) - Google Colors
 export const BOT_DRIVERS: BotDriver[] = [
   {
     name: 'Rossi',
     carNumber: 44,
-    color: '#3B82F6', // Blue
+    color: '#4285F4', // Google Blue
     minReactionTime: 150,
     maxReactionTime: 300,
   },
   {
     name: 'Martinez',
     carNumber: 7,
-    color: '#10B981', // Green
+    color: '#34A853', // Google Green
     minReactionTime: 180,
     maxReactionTime: 350,
   },
   {
     name: 'Chen',
     carNumber: 11,
-    color: '#F59E0B', // Yellow
+    color: '#FBBC05', // Google Yellow
     minReactionTime: 160,
     maxReactionTime: 320,
   },
   {
     name: 'Mueller',
     carNumber: 16,
-    color: '#F97316', // Orange
+    color: '#EA4335', // Google Red
     minReactionTime: 170,
     maxReactionTime: 340,
   },
   {
     name: 'Silva',
     carNumber: 23,
-    color: '#6B7280', // Gray
+    color: '#3C4043', // Google Grey
     minReactionTime: 190,
     maxReactionTime: 380,
   },
 ];
 
-// Color scheme
+// Color scheme - Google Brand Colors
 export const COLORS = {
-  background: '#000000',
-  primary: '#DC0000',    // Ferrari red
-  neon: '#00FF41',       // Neon green accent
-  text: '#FFFFFF',
-  secondary: '#333333',
-  asphalt: '#1A1A1A',
+  background: '#FFFFFF',
+  primary: '#4285F4',    // Google Blue
+  success: '#34A853',    // Google Green
+  warning: '#FBBC05',    // Google Yellow
+  danger: '#EA4335',     // Google Red
+  text: '#3C4043',       // Google Grey
+  secondary: '#F1F3F4',
+  asphalt: '#E8EAED',
 };
 
-// Start lights configuration
+// Start lights configuration - Google Colors
 export const START_LIGHTS = {
   COUNT: 5,
   RADIUS: 20,
   SPACING: 60,
-  COLOR_ON: '#DC0000',
-  COLOR_OFF: '#333333',
-  GLOW_BLUR: 20,
+  COLOR_ON: '#EA4335',   // Google Red
+  COLOR_OFF: '#E8EAED',  // Light grey
+  GLOW_BLUR: 15,
 };
