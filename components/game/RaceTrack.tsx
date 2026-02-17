@@ -39,6 +39,10 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   const [lightsOutTimestamp, setLightsOutTimestamp] = useState<number>(0);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
 
+  // Refs to track timeouts and intervals for cleanup
+  const lightIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lightsOutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Initialize cars
   useEffect(() => {
     const initialCars = initializeCars(playerName, playerCarNumber);
@@ -48,6 +52,21 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   // Initialize audio on component mount
   useEffect(() => {
     audioEngine.init();
+  }, []);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (lightIntervalRef.current) {
+        clearInterval(lightIntervalRef.current);
+      }
+      if (lightsOutTimeoutRef.current) {
+        clearTimeout(lightsOutTimeoutRef.current);
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, []);
 
   // Handle responsive canvas sizing
@@ -80,22 +99,40 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
 
       if (lightCount === 5) {
         clearInterval(lightInterval);
+        lightIntervalRef.current = null;
 
         // Random delay before lights out
         const randomDelay =
           GAME_CONFIG.MIN_RANDOM_DELAY +
           Math.random() * (GAME_CONFIG.MAX_RANDOM_DELAY - GAME_CONFIG.MIN_RANDOM_DELAY);
 
-        setTimeout(() => {
-          // Lights out!
-          setLightsState({ count: 5, allOut: true, falseStart: false });
-          setLightsOutTimestamp(Date.now());
-          setGameState('racing');
-          audioEngine.playEngineStart();
-          audioEngine.vibrate(50);
+        const lightsOutTimeout = setTimeout(() => {
+          // Check if false start already occurred
+          setLightsState((prev) => {
+            if (prev.falseStart) {
+              // Don't transition to racing if false start already detected
+              return prev;
+            }
+            return { count: 5, allOut: true, falseStart: false };
+          });
+
+          setGameState((prevState) => {
+            // Only transition to racing if not already finished (false start)
+            if (prevState === 'finished') {
+              return prevState;
+            }
+            setLightsOutTimestamp(Date.now());
+            audioEngine.playEngineStart();
+            audioEngine.vibrate(50);
+            return 'racing';
+          });
         }, randomDelay);
+
+        lightsOutTimeoutRef.current = lightsOutTimeout;
       }
     }, GAME_CONFIG.LIGHT_INTERVAL);
+
+    lightIntervalRef.current = lightInterval;
   }, []);
 
   // Handle touch events
@@ -115,6 +152,23 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
       } else if (gameState === 'countdown') {
         // False start - released too early
         if (!lightsState.allOut) {
+          // Clear any pending timeouts to prevent lights out transition
+          if (lightsOutTimeoutRef.current) {
+            clearTimeout(lightsOutTimeoutRef.current);
+            lightsOutTimeoutRef.current = null;
+          }
+          if (lightIntervalRef.current) {
+            clearInterval(lightIntervalRef.current);
+            lightIntervalRef.current = null;
+          }
+
+          // Cancel any scheduled animation frames
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = undefined;
+          }
+
+          // Set false start state
           setLightsState((prev) => ({ ...prev, falseStart: true }));
           setGameState('finished');
           audioEngine.vibrate(100);
@@ -156,7 +210,8 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
 
   // Game loop
   useEffect(() => {
-    if (gameState !== 'racing') return;
+    // Only run game loop if racing and no false start
+    if (gameState !== 'racing' || lightsState.falseStart) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -165,20 +220,33 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
     if (!ctx) return;
 
     const gameLoop = () => {
-      // Update bot cars
-      setCars((prevCars) => {
-        const updatedCars = startBotCars(prevCars, lightsOutTimestamp, Date.now());
-        const movedCars = updateCarPositions(updatedCars);
-
-        // Check if race is finished
-        if (isRaceFinished(movedCars)) {
-          setGameState('finished');
+      // Double-check state hasn't changed to false start
+      setLightsState((currentLightsState) => {
+        if (currentLightsState.falseStart) {
+          // Stop the game loop
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = undefined;
+          }
+          return currentLightsState;
         }
 
-        return movedCars;
-      });
+        // Update bot cars
+        setCars((prevCars) => {
+          const updatedCars = startBotCars(prevCars, lightsOutTimestamp, Date.now());
+          const movedCars = updateCarPositions(updatedCars);
 
-      animationFrameRef.current = requestAnimationFrame(gameLoop);
+          // Check if race is finished
+          if (isRaceFinished(movedCars)) {
+            setGameState('finished');
+          }
+
+          return movedCars;
+        });
+
+        animationFrameRef.current = requestAnimationFrame(gameLoop);
+        return currentLightsState;
+      });
     };
 
     animationFrameRef.current = requestAnimationFrame(gameLoop);
@@ -188,7 +256,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [gameState, lightsOutTimestamp]);
+  }, [gameState, lightsState.falseStart, lightsOutTimestamp]);
 
   // Render canvas (track only)
   useEffect(() => {
