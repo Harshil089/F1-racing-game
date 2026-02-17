@@ -3,6 +3,13 @@
 import { useEffect, useState } from 'react';
 import { RaceResult } from '@/types';
 import { useRouter } from 'next/navigation';
+import {
+  getLeaderboard,
+  updateLeaderboard,
+  qualifiesForLeaderboard,
+  getPositionEmoji,
+  LeaderboardEntry
+} from '@/lib/leaderboard';
 
 interface ResultsScreenProps {
   results: RaceResult[];
@@ -11,10 +18,14 @@ interface ResultsScreenProps {
 export default function ResultsScreen({ results }: ResultsScreenProps) {
   const router = useRouter();
   const [bestTime, setBestTime] = useState<number | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardPosition, setLeaderboardPosition] = useState<number | null>(null);
+  const [isNewRecord, setIsNewRecord] = useState(false);
 
   const playerResult = results.find((r) => r.car.isPlayer);
-  const playerPosition = playerResult?.position || 0;
   const playerReactionTime = playerResult?.car.reactionTime || 0;
+  const playerName = playerResult?.car.name || '';
+  const playerCarNumber = playerResult?.car.carNumber || 0;
 
   useEffect(() => {
     // Load best time from localStorage
@@ -33,7 +44,22 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
       localStorage.setItem('bestReactionTime', playerReactionTime.toString());
       setBestTime(playerReactionTime);
     }
-  }, [playerReactionTime]);
+
+    // Load and update leaderboard
+    const currentLeaderboard = getLeaderboard();
+
+    // Check if player qualifies for leaderboard
+    if (qualifiesForLeaderboard(playerReactionTime)) {
+      const position = updateLeaderboard(playerName, playerReactionTime, playerCarNumber);
+      if (position !== null) {
+        setLeaderboardPosition(position);
+        setIsNewRecord(position === 1 && currentLeaderboard.length > 0);
+      }
+    }
+
+    // Reload leaderboard after potential update
+    setLeaderboard(getLeaderboard());
+  }, [playerReactionTime, playerName, playerCarNumber]);
 
   const handleRaceAgain = () => {
     window.location.reload();
@@ -42,19 +68,6 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
   const handleNewPlayer = () => {
     localStorage.removeItem('playerData');
     router.push('/');
-  };
-
-  const getPositionEmoji = (position: number) => {
-    switch (position) {
-      case 1:
-        return '🥇';
-      case 2:
-        return '🥈';
-      case 3:
-        return '🥉';
-      default:
-        return '🏁';
-    }
   };
 
   const getPositionColor = (position: number) => {
@@ -90,15 +103,19 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
         <div className="bg-white rounded-3xl p-8 google-shadow-lg">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-7xl mb-4">{getPositionEmoji(playerPosition)}</div>
-            <h2 className="text-5xl font-bold mb-3 text-google-blue">
-              {playerPosition === 1 ? 'VICTORY!' : playerPosition <= 3 ? 'PODIUM!' : 'RACE COMPLETE'}
-            </h2>
-            <div className={`inline-block px-6 py-2 rounded-full border-2 ${getPositionBgColor(playerPosition)}`}>
-              <p className={`text-2xl font-bold ${getPositionColor(playerPosition)}`}>
-                {playerPosition}{playerPosition === 1 ? 'st' : playerPosition === 2 ? 'nd' : playerPosition === 3 ? 'rd' : 'th'} PLACE
-              </p>
+            <div className="text-7xl mb-4">
+              {isNewRecord ? '🏆' : leaderboardPosition ? getPositionEmoji(leaderboardPosition) : '🏁'}
             </div>
+            <h2 className="text-5xl font-bold mb-3 text-google-blue">
+              {isNewRecord ? 'NEW RECORD!' : leaderboardPosition ? 'LEADERBOARD!' : 'RACE COMPLETE'}
+            </h2>
+            {leaderboardPosition && (
+              <div className={`inline-block px-6 py-2 rounded-full border-2 ${getPositionBgColor(leaderboardPosition)}`}>
+                <p className={`text-2xl font-bold ${getPositionColor(leaderboardPosition)}`}>
+                  {leaderboardPosition}{leaderboardPosition === 1 ? 'st' : leaderboardPosition === 2 ? 'nd' : leaderboardPosition === 3 ? 'rd' : 'th'} PLACE
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Player Stats - Google Cards */}
@@ -118,45 +135,58 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
           </div>
 
           {/* Leaderboard - Google Style */}
-          <div className="bg-gray-50 rounded-2xl p-6 mb-6 max-h-80 overflow-y-auto">
+          <div className="bg-gray-50 rounded-2xl p-6 mb-6">
             <h3 className="text-xl font-bold mb-4 text-google-grey flex items-center justify-center gap-2">
-              <span>🏁</span> Race Results
+              <span>🏆</span> Top 3 Fastest Times
             </h3>
             <div className="space-y-2">
-              {results.map((result) => (
-                <div
-                  key={result.car.id}
-                  className={`flex items-center justify-between p-4 rounded-xl transition-all ${
-                    result.car.isPlayer
-                      ? 'bg-google-blue/10 border-2 border-google-blue google-shadow'
-                      : 'bg-white border border-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-4 flex-1">
-                    <span className={`text-2xl font-bold w-8 ${getPositionColor(result.position)}`}>
-                      {result.position}
-                    </span>
-                    <div
-                      className="w-5 h-5 rounded-full border-2 border-white google-shadow"
-                      style={{ backgroundColor: result.car.color }}
-                    />
-                    <div className="flex-1">
-                      <p className="font-bold text-google-grey">
-                        {result.car.name}
-                        {result.car.isPlayer && (
-                          <span className="ml-2 google-badge google-badge-primary">YOU</span>
-                        )}
-                      </p>
-                      <p className="text-sm text-gray-500">Car #{result.car.carNumber}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-mono text-xl font-bold text-google-green">
-                      {result.car.reactionTime}ms
-                    </p>
-                  </div>
+              {leaderboard.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p className="text-lg mb-2">No records yet!</p>
+                  <p className="text-sm">Be the first to set a time</p>
                 </div>
-              ))}
+              ) : (
+                leaderboard.map((entry, index) => {
+                  const position = index + 1;
+                  const isCurrentPlayer = entry.name === playerName &&
+                                         entry.reactionTime === playerReactionTime &&
+                                         Math.abs(entry.timestamp - Date.now()) < 5000; // Within last 5 seconds
+
+                  return (
+                    <div
+                      key={`${entry.name}-${entry.timestamp}`}
+                      className={`flex items-center justify-between p-4 rounded-xl transition-all ${
+                        isCurrentPlayer
+                          ? 'bg-google-blue/10 border-2 border-google-blue google-shadow animate-pulse'
+                          : 'bg-white border border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <span className={`text-3xl font-bold w-12 ${getPositionColor(position)}`}>
+                          {getPositionEmoji(position)}
+                        </span>
+                        <div className="flex-1">
+                          <p className="font-bold text-google-grey">
+                            {entry.name}
+                            {isCurrentPlayer && (
+                              <span className="ml-2 google-badge google-badge-primary">YOU</span>
+                            )}
+                          </p>
+                          <p className="text-sm text-gray-500">Car #{entry.carNumber}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono text-2xl font-bold text-google-green">
+                          {entry.reactionTime}ms
+                        </p>
+                        {position === 1 && (
+                          <p className="text-xs text-google-yellow font-bold">FASTEST</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 

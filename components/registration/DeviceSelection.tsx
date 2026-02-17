@@ -11,14 +11,10 @@ export default function DeviceSelection({ onDeviceSelected }: DeviceSelectionPro
 
   const handleDeviceClick = (deviceType: 'mobile' | 'laptop') => {
     setSelectedDevice(deviceType);
-  };
-
-  const handleContinue = () => {
-    if (selectedDevice) {
-      // Store device type in localStorage
-      localStorage.setItem('deviceType', selectedDevice);
-      onDeviceSelected(selectedDevice);
-    }
+    // Store device type in localStorage
+    localStorage.setItem('deviceType', deviceType);
+    // Immediately navigate to the next step
+    onDeviceSelected(deviceType);
   };
 
   return (
@@ -79,30 +75,6 @@ export default function DeviceSelection({ onDeviceSelected }: DeviceSelectionPro
           </button>
         </div>
 
-        {/* Continue Button */}
-        <button
-          onClick={handleContinue}
-          disabled={!selectedDevice}
-          className={`w-full py-4 text-lg font-medium rounded-lg transition-all duration-200 ${
-            selectedDevice
-              ? 'google-btn-primary'
-              : 'opacity-50 cursor-not-allowed bg-gray-300 text-gray-500'
-          }`}
-        >
-          {selectedDevice ? '➡️ CONTINUE' : '👆 SELECT A DEVICE'}
-        </button>
-
-        {/* Info Alert */}
-        {selectedDevice && (
-          <div className="mt-6 bg-blue-50 rounded-lg p-4 fade-in">
-            <p className="text-sm text-google-grey text-center">
-              💡 You selected:{' '}
-              <strong>
-                {selectedDevice === 'mobile' ? 'Mobile / Tablet' : 'Laptop / Desktop'}
-              </strong>
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Google-style helper text */}

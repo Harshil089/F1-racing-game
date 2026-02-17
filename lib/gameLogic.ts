@@ -2,7 +2,7 @@ import { Car, RaceResult } from '@/types';
 import { BOT_DRIVERS, GAME_CONFIG } from './constants';
 
 /**
- * Initialize all cars (1 player + 5 bots)
+ * Initialize player car only (single player mode)
  */
 export function initializeCars(playerName: string, playerCarNumber: number): Car[] {
   const cars: Car[] = [];
@@ -17,20 +17,6 @@ export function initializeCars(playerName: string, playerCarNumber: number): Car
     speed: 0,
     reactionTime: 0,
     isPlayer: true,
-  });
-
-  // Bot cars
-  BOT_DRIVERS.forEach((bot, index) => {
-    cars.push({
-      id: index + 1,
-      name: bot.name,
-      carNumber: bot.carNumber,
-      color: bot.color,
-      position: 0,
-      speed: 0,
-      reactionTime: 0,
-      isPlayer: false,
-    });
   });
 
   return cars;
@@ -161,10 +147,11 @@ export function getPlayerPosition(cars: Car[]): number {
 
 /**
  * Calculate lane X position for a car (vertical layout - cars in horizontal lanes)
+ * For single player mode, center the car horizontally
  */
 export function getLaneXPosition(carIndex: number, canvasWidth: number): number {
-  const laneWidth = canvasWidth / GAME_CONFIG.LANE_COUNT;
-  return carIndex * laneWidth + laneWidth / 2 - GAME_CONFIG.CAR_WIDTH / 2;
+  // Center the car horizontally on the track
+  return canvasWidth / 2 - GAME_CONFIG.CAR_WIDTH / 2;
 }
 
 /**
@@ -302,6 +289,7 @@ export function drawCar(
 
 /**
  * Draw track with lanes (vertical layout)
+ * Single player mode - no lane dividers needed
  */
 export function drawTrack(
   ctx: CanvasRenderingContext2D,
@@ -312,21 +300,7 @@ export function drawTrack(
   ctx.fillStyle = '#1A1A1A';
   ctx.fillRect(0, 0, width, height);
 
-  // Lane dividers (vertical lines for horizontal lanes)
-  const laneWidth = width / GAME_CONFIG.LANE_COUNT;
-  ctx.strokeStyle = '#333333';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([10, 10]);
-
-  for (let i = 1; i < GAME_CONFIG.LANE_COUNT; i++) {
-    const x = i * laneWidth;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
-  }
-
-  ctx.setLineDash([]);
+  // No lane dividers needed for single player mode
 
   // Start line (horizontal line at top)
   ctx.strokeStyle = '#FFFFFF';
