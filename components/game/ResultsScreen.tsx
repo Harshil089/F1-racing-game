@@ -4,12 +4,11 @@ import { useEffect, useState } from 'react';
 import { RaceResult } from '@/types';
 import { useRouter } from 'next/navigation';
 import {
-  getLeaderboard,
-  updateLeaderboard,
   qualifiesForLeaderboard,
   getPositionEmoji,
   LeaderboardEntry
 } from '@/lib/leaderboard';
+import { useLeaderboard } from '@/hooks/useLeaderboard';
 
 interface ResultsScreenProps {
   results: RaceResult[];
@@ -18,10 +17,12 @@ interface ResultsScreenProps {
 export default function ResultsScreen({ results }: ResultsScreenProps) {
   const router = useRouter();
   const [bestTime, setBestTime] = useState<number | null>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [leaderboardPosition, setLeaderboardPosition] = useState<number | null>(null);
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [playerPhone, setPlayerPhone] = useState<string>('');
+
+  // Use real-time leaderboard hook
+  const { leaderboard, isConnected, updateLeaderboard: updateLeaderboardRealtime } = useLeaderboard();
 
   const playerResult = results.find((r) => r.car.isPlayer);
   const playerReactionTime = playerResult?.car.reactionTime || 0;
@@ -59,21 +60,20 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
       setBestTime(playerReactionTime);
     }
 
-    // Load and update leaderboard
-    const currentLeaderboard = getLeaderboard();
-
-    // Check if player qualifies for leaderboard
+    // Check if player qualifies for leaderboard and update via API
     if (qualifiesForLeaderboard(playerReactionTime) && phone) {
-      const position = updateLeaderboard(playerName, phone, playerReactionTime, playerCarNumber);
-      if (position !== null) {
-        setLeaderboardPosition(position);
-        setIsNewRecord(position === 1 && currentLeaderboard.length > 0);
-      }
+      updateLeaderboardRealtime(playerName, phone, playerReactionTime, playerCarNumber)
+        .then(result => {
+          if (result.position !== null) {
+            setLeaderboardPosition(result.position);
+            setIsNewRecord(result.position === 1 && result.leaderboard.length > 1);
+          }
+        })
+        .catch(error => {
+          console.error('Error updating leaderboard:', error);
+        });
     }
-
-    // Reload leaderboard after potential update
-    setLeaderboard(getLeaderboard());
-  }, [playerReactionTime, playerName, playerCarNumber]);
+  }, [playerReactionTime, playerName, playerCarNumber, updateLeaderboardRealtime]);
 
   const handleRaceAgain = () => {
     window.location.reload();
@@ -150,9 +150,18 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
 
           {/* Leaderboard - Google Style */}
           <div className="bg-gray-50 rounded-2xl p-6 mb-6">
-            <h3 className="text-xl font-bold mb-4 text-google-grey flex items-center justify-center gap-2">
-              <span>🏆</span> Top 3 Fastest Times
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-google-grey flex items-center gap-2">
+                <span>🏆</span> Top 3 Fastest Times
+              </h3>
+              {/* Real-time indicator */}
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                <span className="text-xs text-gray-500">
+                  {isConnected ? 'Live' : 'Offline'}
+                </span>
+              </div>
+            </div>
             <div className="space-y-2">
               {leaderboard.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
