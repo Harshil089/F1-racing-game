@@ -16,10 +16,8 @@ export default function GamePage() {
     const storedDeviceType = localStorage.getItem('deviceType') as 'mobile' | 'laptop' | null;
     if (storedDeviceType) {
       setDeviceType(storedDeviceType);
-      // Skip ThumbGate for laptop users
-      if (storedDeviceType === 'laptop') {
-        setShowThumbGate(false);
-      }
+      // Skip ThumbGate for all users - single touch/keypress starts the game directly
+      setShowThumbGate(false);
     }
 
     // Load player data from localStorage

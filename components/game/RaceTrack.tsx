@@ -145,22 +145,29 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   }, []);
 
   // Handle touch events (for mobile)
+  // touchstart begins the countdown, touchend registers release (reaction or false start)
   useEffect(() => {
     if (deviceType !== 'mobile') return;
 
-    const handleTouchEnd = (e: TouchEvent) => {
-      // Only prevent default for canvas touches, not button clicks
+    const handleTouchStart = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
-      if (target.tagName === 'BUTTON') {
-        return; // Let button clicks work normally
-      }
+      if (target.tagName === 'BUTTON') return;
 
       e.preventDefault();
 
       if (gameState === 'ready') {
-        // Start the lights sequence
+        // Single touch starts the lights sequence immediately
         startLightsSequence();
-      } else if (gameState === 'countdown') {
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'BUTTON') return;
+
+      e.preventDefault();
+
+      if (gameState === 'countdown') {
         // False start - released too early
         if (!lightsState.allOut) {
           // Clear any pending timeouts to prevent lights out transition
@@ -212,9 +219,11 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
       }
     };
 
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [gameState, lightsState, lightsOutTimestamp, startLightsSequence, deviceType]);
@@ -417,7 +426,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
           {gameState === 'ready' && (
             <div className="bg-white/95 px-6 py-3 rounded-full google-shadow-lg">
               <p className="text-2xl font-bold text-google-blue animate-pulse">
-                {deviceType === 'mobile' ? '👆 TOUCH TO START' : '⌨️ PRESS SPACEBAR TO START'}
+                {deviceType === 'mobile' ? '👆 TOUCH & HOLD TO START' : '⌨️ PRESS SPACEBAR TO START'}
               </p>
             </div>
           )}
