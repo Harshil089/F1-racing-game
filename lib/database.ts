@@ -1,29 +1,33 @@
 /**
- * Simple file-based database for leaderboard
+ * Redis-based database for leaderboard (works with Vercel/Upstash)
  */
-import fs from 'fs/promises';
-import path from 'path';
+import { Redis } from '@upstash/redis';
+import { kv } from '@vercel/kv';
 import { LeaderboardEntry } from './leaderboard';
 
-const DB_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DB_DIR, 'leaderboard.json');
 const MAX_ENTRIES = 3;
+const LEADERBOARD_KEY = 'f1_leaderboard';
 
 /**
- * Ensure database directory exists
+ * Get Redis client - uses @vercel/kv in production (Vercel environment)
+ * or @upstash/redis for manual configuration
  */
-async function ensureDbExists(): Promise<void> {
-  try {
-    await fs.mkdir(DB_DIR, { recursive: true });
-    try {
-      await fs.access(DB_FILE);
-    } catch {
-      // File doesn't exist, create it
-      await fs.writeFile(DB_FILE, JSON.stringify([], null, 2));
-    }
-  } catch (error) {
-    console.error('Error ensuring database exists:', error);
+function getRedisClient() {
+  // Use @vercel/kv if running on Vercel (it auto-configures)
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    return kv;
   }
+
+  // Fallback to direct Upstash connection if KV_REST_API_URL is not available
+  // This is useful for local development or other hosting platforms
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  }
+
+  throw new Error('Redis configuration missing. Please set KV_REST_API_URL and KV_REST_API_TOKEN, or UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN environment variables.');
 }
 
 /**
@@ -31,10 +35,14 @@ async function ensureDbExists(): Promise<void> {
  */
 export async function getLeaderboardFromDb(): Promise<LeaderboardEntry[]> {
   try {
-    await ensureDbExists();
-    const data = await fs.readFile(DB_FILE, 'utf-8');
-    const entries = JSON.parse(data) as LeaderboardEntry[];
-    return entries.sort((a, b) => a.reactionTime - b.reactionTime).slice(0, MAX_ENTRIES);
+    const redis = getRedisClient();
+    const data = await redis.get<LeaderboardEntry[]>(LEADERBOARD_KEY);
+
+    if (!data || !Array.isArray(data)) {
+      return [];
+    }
+
+    return data.sort((a, b) => a.reactionTime - b.reactionTime).slice(0, MAX_ENTRIES);
   } catch (error) {
     console.error('Error reading leaderboard from database:', error);
     return [];
@@ -52,7 +60,7 @@ export async function updateLeaderboardInDb(
   carNumber: number
 ): Promise<{ leaderboard: LeaderboardEntry[]; position: number | null }> {
   try {
-    await ensureDbExists();
+    const redis = getRedisClient();
 
     // Don't add false starts
     if (reactionTime >= 999) {
@@ -94,8 +102,8 @@ export async function updateLeaderboardInDb(
     // Keep only top 3
     const topThree = leaderboard.slice(0, MAX_ENTRIES);
 
-    // Save to database
-    await fs.writeFile(DB_FILE, JSON.stringify(topThree, null, 2));
+    // Save to Redis
+    await redis.set(LEADERBOARD_KEY, topThree);
 
     // Find position of the current user (1-indexed)
     const position = topThree.findIndex(entry =>
@@ -118,8 +126,8 @@ export async function updateLeaderboardInDb(
  */
 export async function clearLeaderboardInDb(): Promise<void> {
   try {
-    await ensureDbExists();
-    await fs.writeFile(DB_FILE, JSON.stringify([], null, 2));
+    const redis = getRedisClient();
+    await redis.set(LEADERBOARD_KEY, []);
   } catch (error) {
     console.error('Error clearing leaderboard:', error);
   }
