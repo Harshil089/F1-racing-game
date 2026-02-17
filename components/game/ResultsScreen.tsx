@@ -147,6 +147,9 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
                   Your previous best ({leaderboard.find(e => e.name === playerName && e.phone === playerPhone)?.reactionTime}ms) is still on the leaderboard
                 </p>
               )}
+              <p className="text-sm font-bold text-black mt-3">
+                Visit Google Developer Group club catalyst stall to claim your reward.
+              </p>
             </div>
 
             {/* Player Stats - Google Cards */}
