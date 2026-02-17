@@ -76,14 +76,18 @@ export async function updateLeaderboardInDb(
     );
 
     if (existingEntryIndex !== -1) {
-      // Update existing entry with new reaction time
-      leaderboard[existingEntryIndex] = {
-        name,
-        phone,
-        reactionTime,
-        carNumber,
-        timestamp: Date.now(),
-      };
+      // Only update if the new reaction time is better (lower) than the existing one
+      const existingTime = leaderboard[existingEntryIndex].reactionTime;
+      if (reactionTime < existingTime) {
+        leaderboard[existingEntryIndex] = {
+          name,
+          phone,
+          reactionTime,
+          carNumber,
+          timestamp: Date.now(),
+        };
+      }
+      // If new time is worse, keep the existing entry unchanged
     } else {
       // Add new entry
       const newEntry: LeaderboardEntry = {
