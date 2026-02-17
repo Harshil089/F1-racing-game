@@ -47,7 +47,11 @@ export function useLeaderboard() {
       initializingRef.current = true;
 
       try {
-        const socket = ioClient('http://localhost:3000', {
+        // Use the current window location for the socket connection
+        // This works for both local development and production (Vercel)
+        const socketUrl = window.location.origin;
+
+        const socket = ioClient(socketUrl, {
           path: '/socket.io',
           transports: ['websocket', 'polling'],
           reconnection: true,
@@ -58,21 +62,28 @@ export function useLeaderboard() {
 
         socket.on('connect', () => {
           console.log('✅ Socket connected:', socket.id);
+          console.log('📡 Connected to:', socketUrl);
+          console.log('🌐 Transport:', socket.io.engine.transport.name);
           setIsConnected(true);
         });
 
         socket.on('disconnect', (reason: string) => {
           console.log('❌ Socket disconnected:', reason);
+          console.log('📍 Was connected to:', socketUrl);
           setIsConnected(false);
         });
 
         socket.on('connect_error', (error: Error) => {
           console.error('❌ Socket connection error:', error.message);
+          console.error('🔗 Attempted URL:', socketUrl);
+          console.error('📱 User Agent:', navigator.userAgent);
+          console.error('🌐 Full error:', error);
           setIsConnected(false);
         });
 
         socket.on('error', (error: Error) => {
           console.error('❌ Socket error:', error);
+          console.error('📍 Socket URL:', socketUrl);
         });
 
         socket.on('leaderboard:updated', (data: { leaderboard: LeaderboardEntry[] }) => {
