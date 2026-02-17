@@ -5,7 +5,7 @@ import { Redis } from '@upstash/redis';
 import { kv } from '@vercel/kv';
 import { LeaderboardEntry } from './leaderboard';
 
-const MAX_ENTRIES = 10;
+const MAX_ENTRIES = 3;
 const LEADERBOARD_KEY = 'f1_leaderboard';
 
 /**
