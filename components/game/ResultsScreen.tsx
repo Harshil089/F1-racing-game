@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { RaceResult } from '@/types';
 import { useRouter } from 'next/navigation';
 import {
-  qualifiesForLeaderboard,
   getPositionEmoji,
   LeaderboardEntry
 } from '@/lib/leaderboard';
@@ -60,8 +59,8 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
       setBestTime(playerReactionTime);
     }
 
-    // Check if player qualifies for leaderboard and update via API
-    if (qualifiesForLeaderboard(playerReactionTime) && phone) {
+    // Submit score to server — server handles dedup and best-time logic
+    if (playerReactionTime > 0 && playerReactionTime < 999 && phone) {
       console.log('[ResultsScreen] Submitting score to leaderboard...');
       updateLeaderboardRealtime(playerName, phone, playerReactionTime, playerCarNumber)
         .then(result => {
