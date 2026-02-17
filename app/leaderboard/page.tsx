@@ -128,13 +128,16 @@ export default function LeaderboardPage() {
                   >
                     <div className="flex items-center gap-6 flex-1">
                       {/* Position */}
-                      <div className="flex flex-col items-center min-w-[60px]">
+                      <div className="flex flex-col items-center min-w-[60px] max-w-[200px]">
                         <span className={`text-5xl ${getPositionColor(position)}`}>
                           {getPositionEmoji(position)}
                         </span>
                         <span className={`text-sm font-bold mt-1 ${getPositionColor(position)}`}>
                           #{position}
                         </span>
+                        <p className="text-xs sm:text-sm font-bold text-google-blue text-center mt-3 leading-tight">
+                          Visit Google Developer Group club catalyst stall to claim your reward.
+                        </p>
                       </div>
 
                       {/* Player Info */}
