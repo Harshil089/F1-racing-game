@@ -62,9 +62,11 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
 
     // Check if player qualifies for leaderboard and update via API
     if (qualifiesForLeaderboard(playerReactionTime) && phone) {
+      console.log('[ResultsScreen] Submitting score to leaderboard...');
       updateLeaderboardRealtime(playerName, phone, playerReactionTime, playerCarNumber)
         .then(result => {
           if (result.position !== null) {
+            console.log('[ResultsScreen] Position received:', result.position);
             setLeaderboardPosition(result.position);
             setIsNewRecord(result.position === 1 && result.leaderboard.length > 1);
           }
@@ -73,7 +75,8 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
           console.error('Error updating leaderboard:', error);
         });
     }
-  }, [playerReactionTime, playerName, playerCarNumber, updateLeaderboardRealtime]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerReactionTime, playerName, playerCarNumber]);
 
   const handleRaceAgain = () => {
     window.location.reload();

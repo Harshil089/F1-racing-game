@@ -62,8 +62,14 @@ export function useLeaderboard() {
 
   // Initialize polling
   useEffect(() => {
-    // Fetch immediately on mount
-    fetchLeaderboard(false);
+    console.log('[Polling] Initializing leaderboard polling...');
+
+    // Fetch immediately on mount (only if not currently updating)
+    if (!isUpdatingRef.current) {
+      fetchLeaderboard(false);
+    } else {
+      console.log('[Polling] Skipping initial fetch - update in progress');
+    }
 
     // Set up polling interval - skip fetch if we just updated
     pollingIntervalRef.current = setInterval(() => {
@@ -72,6 +78,7 @@ export function useLeaderboard() {
 
     return () => {
       // Clean up on unmount
+      console.log('[Polling] Cleaning up polling interval');
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
