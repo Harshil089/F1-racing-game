@@ -32,8 +32,14 @@ export function useLeaderboard() {
         return;
       }
 
-      const response = await fetch('/api/leaderboard', {
+      // Add timestamp to prevent mobile browser caching
+      const timestamp = Date.now();
+      const response = await fetch(`/api/leaderboard?t=${timestamp}`, {
         cache: 'no-store', // Don't cache, always get fresh data
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache', // For older browsers
+        },
       });
 
       if (response.ok) {
@@ -42,6 +48,7 @@ export function useLeaderboard() {
         // Double-check that no update started while we were fetching
         // This prevents stale data from overwriting fresh updates
         if (!isUpdatingRef.current) {
+          console.log('[Polling] Leaderboard fetched:', data.leaderboard?.map((e: any) => `${e.name}: ${e.reactionTime}ms`));
           setLeaderboard(data.leaderboard || []);
         } else {
           console.log('[Polling] Discarding fetch result - update in progress');
