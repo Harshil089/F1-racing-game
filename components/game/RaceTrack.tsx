@@ -9,7 +9,6 @@ import {
   calculateSpeed,
   startBotCars,
   updateCarPositions,
-  isRaceFinished,
   getRaceResults,
   getLaneXPosition,
   getCarYPosition,
@@ -39,10 +38,12 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   const [lightsOutTimestamp, setLightsOutTimestamp] = useState<number>(0);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [deviceType, setDeviceType] = useState<'mobile' | 'laptop'>('mobile');
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // Refs to track timeouts and intervals for cleanup
   const lightIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lightsOutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const leaderboardTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load device type from localStorage
   useEffect(() => {
@@ -71,6 +72,9 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
       }
       if (lightsOutTimeoutRef.current) {
         clearTimeout(lightsOutTimeoutRef.current);
+      }
+      if (leaderboardTimeoutRef.current) {
+        clearTimeout(leaderboardTimeoutRef.current);
       }
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -219,6 +223,14 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
               : car
           )
         );
+
+        // Show leaderboard 1 second after release (game keeps running in background)
+        if (leaderboardTimeoutRef.current) {
+          clearTimeout(leaderboardTimeoutRef.current);
+        }
+        leaderboardTimeoutRef.current = setTimeout(() => {
+          setShowLeaderboard(true);
+        }, 1000);
       }
     };
 
@@ -302,6 +314,14 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
               : car
           )
         );
+
+        // Show leaderboard 1 second after release (game keeps running in background)
+        if (leaderboardTimeoutRef.current) {
+          clearTimeout(leaderboardTimeoutRef.current);
+        }
+        leaderboardTimeoutRef.current = setTimeout(() => {
+          setShowLeaderboard(true);
+        }, 1000);
       }
     };
 
@@ -342,10 +362,6 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
           const updatedCars = startBotCars(prevCars, lightsOutTimestamp, Date.now());
           const movedCars = updateCarPositions(updatedCars);
 
-          // Check if race is finished
-          if (isRaceFinished(movedCars)) {
-            setGameState('finished');
-          }
 
           return movedCars;
         });
@@ -471,8 +487,8 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
         <FalseStartScreen />
       )}
 
-      {/* Results Screen (only for normal finish) */}
-      {gameState === 'finished' && !lightsState.falseStart && (
+      {/* Results Screen - shown 1 second after thumb/spacebar release */}
+      {showLeaderboard && !lightsState.falseStart && (
         <ResultsScreen results={getRaceResults(cars)} />
       )}
     </div>
