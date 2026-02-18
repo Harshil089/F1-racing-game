@@ -1,13 +1,24 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getLeaderboardFromDb } from '@/lib/database';
+import { validateAdminKey } from '@/lib/gameToken';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/leaderboard/debug
- * Debug endpoint to see raw leaderboard data
+ * Debug endpoint to see leaderboard data
+ * 
+ * SECURITY: Requires admin API key. No longer leaks raw phone numbers.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+    // Validate admin access
+    if (!validateAdminKey(request)) {
+        return NextResponse.json(
+            { error: 'Unauthorized. Admin API key required.' },
+            { status: 401 }
+        );
+    }
+
     try {
         const leaderboard = await getLeaderboardFromDb();
 
@@ -16,12 +27,12 @@ export async function GET() {
             entries: leaderboard.map((entry, index) => ({
                 position: index + 1,
                 name: entry.name,
-                phone: entry.phone.slice(-4),
+                phone: `****${entry.phone.slice(-4)}`, // Mask phone number
                 reactionTime: entry.reactionTime,
                 carNumber: entry.carNumber,
                 timestamp: new Date(entry.timestamp).toISOString(),
             })),
-            raw: leaderboard,
+            // REMOVED: raw leaderboard data was leaking full phone numbers
         }, {
             status: 200,
             headers: {

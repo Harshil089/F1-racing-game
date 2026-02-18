@@ -11,9 +11,10 @@ import { useLeaderboard } from '@/hooks/useLeaderboard';
 
 interface ResultsScreenProps {
   results: RaceResult[];
+  gameToken: string | null;
 }
 
-export default function ResultsScreen({ results }: ResultsScreenProps) {
+export default function ResultsScreen({ results, gameToken }: ResultsScreenProps) {
   const router = useRouter();
   const [bestTime, setBestTime] = useState<number | null>(null);
   const [leaderboardPosition, setLeaderboardPosition] = useState<number | null>(null);
@@ -64,7 +65,7 @@ export default function ResultsScreen({ results }: ResultsScreenProps) {
     // Submit score to server — server handles dedup and best-time logic
     if (playerReactionTime > 0 && playerReactionTime < 999 && phone) {
       console.log('[ResultsScreen] Submitting score to leaderboard...');
-      updateLeaderboardRealtime(playerName, phone, playerReactionTime, playerCarNumber)
+      updateLeaderboardRealtime(playerName, phone, playerReactionTime, playerCarNumber, gameToken)
         .then(result => {
           if (result.position !== null) {
             console.log('[ResultsScreen] Position received:', result.position, 'isCurrentTime:', result.isCurrentTime);

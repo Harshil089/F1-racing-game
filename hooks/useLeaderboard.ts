@@ -1,6 +1,9 @@
 /**
  * Custom hook for leaderboard updates using polling
  * Compatible with Vercel serverless deployment
+ * 
+ * SECURITY: Now requests a game token from /api/game/start before
+ * submitting scores, preventing direct API manipulation.
  */
 'use client';
 
@@ -99,7 +102,8 @@ export function useLeaderboard() {
       name: string,
       phone: string,
       reactionTime: number,
-      carNumber: number
+      carNumber: number,
+      gameToken: string | null
     ): Promise<{ position: number | null; leaderboard: LeaderboardEntry[]; isCurrentTime: boolean }> => {
       // Mark that an update is in progress
       // This prevents polling from overwriting the update
@@ -107,6 +111,10 @@ export function useLeaderboard() {
       console.log('[Update] Starting leaderboard update...');
 
       try {
+        if (!gameToken) {
+          console.warn('[Security] No game token available — score submission may be rejected');
+        }
+
         const response = await fetch('/api/leaderboard/update', {
           method: 'POST',
           headers: {
@@ -117,8 +125,11 @@ export function useLeaderboard() {
             phone,
             reactionTime,
             carNumber,
+            gameToken,
           }),
         });
+
+        // Clear the token after use (single-use) — it's now managed by the caller
 
         if (response.ok) {
           const data = await response.json();
@@ -142,6 +153,10 @@ export function useLeaderboard() {
             isCurrentTime: data.isCurrentTime ?? false,
           };
         }
+
+        // If update failed, log the reason
+        const errorData = await response.json().catch(() => null);
+        console.error('[Update] Failed:', response.status, errorData?.error);
 
         // If update failed, allow polling to resume immediately
         isUpdatingRef.current = false;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateLeaderboardInDb } from '@/lib/database';
+import { validateGameToken, checkRateLimit, MAX_REACTION_TIME_MS } from '@/lib/gameToken';
 
 // Prevent Next.js from caching this route
 export const dynamic = 'force-dynamic';
@@ -7,13 +8,50 @@ export const dynamic = 'force-dynamic';
 /**
  * POST /api/leaderboard/update
  * Update leaderboard with new score
+ * 
+ * SECURITY:
+ * - Requires a valid game token (issued by /api/game/start)
+ * - Validates reaction time is within humanly possible bounds
+ * - Rate limited per IP
+ * - Tokens are single-use (prevents replay attacks)
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { name, phone, reactionTime, carNumber } = body;
+    // --- Rate Limiting ---
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
 
-    // Validation
+    const rateCheck = checkRateLimit(ip);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: `Rate limit exceeded. Try again in ${Math.ceil((rateCheck.retryAfterMs || 0) / 1000)} seconds.` },
+        { status: 429 }
+      );
+    }
+
+    // --- Parse Body ---
+    const body = await request.json();
+    const { name, phone, reactionTime, carNumber, gameToken } = body;
+
+    // --- Game Token Validation ---
+    if (!gameToken || typeof gameToken !== 'string') {
+      return NextResponse.json(
+        { error: 'Missing game token. You must play the game to submit a score.' },
+        { status: 403 }
+      );
+    }
+
+    const tokenValidation = validateGameToken(gameToken, reactionTime);
+    if (!tokenValidation.valid) {
+      console.warn(`[SECURITY] Invalid token from IP ${ip}: ${tokenValidation.error}`);
+      return NextResponse.json(
+        { error: tokenValidation.error },
+        { status: 403 }
+      );
+    }
+
+    // --- Input Validation ---
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json(
         { error: 'Name is required' },
@@ -28,9 +66,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (typeof reactionTime !== 'number' || reactionTime < 0) {
+    if (typeof reactionTime !== 'number' || reactionTime < 0 || reactionTime >= MAX_REACTION_TIME_MS) {
       return NextResponse.json(
-        { error: 'Valid reaction time is required' },
+        { error: `Reaction time must be a valid positive number under ${MAX_REACTION_TIME_MS}ms` },
         { status: 400 }
       );
     }
@@ -43,7 +81,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update leaderboard
+    // --- Update Leaderboard ---
     const result = await updateLeaderboardInDb(
       name.trim(),
       phone.trim(),

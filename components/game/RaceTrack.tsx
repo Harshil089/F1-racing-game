@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Car, GameState, LightsState } from '@/types';
+// Game token for anti-cheat
 import { GAME_CONFIG } from '@/lib/constants';
 import {
   initializeCars,
@@ -39,6 +40,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [deviceType, setDeviceType] = useState<'mobile' | 'laptop'>('mobile');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [gameToken, setGameToken] = useState<string | null>(null);
 
   // Refs to track timeouts and intervals for cleanup
   const lightIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -105,6 +107,15 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   const startLightsSequence = useCallback(() => {
     setGameState('countdown');
     let lightCount = 0;
+
+    // Request a game token from the server for anti-cheat
+    fetch('/api/game/start', { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        setGameToken(data.gameToken);
+        console.log('[Security] Game token received:', data.sessionId);
+      })
+      .catch(err => console.error('[Security] Failed to get game token:', err));
 
     const lightInterval = setInterval(() => {
       lightCount++;
@@ -494,7 +505,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
 
       {/* Results Screen - shown 1 second after thumb/spacebar release */}
       {showLeaderboard && !lightsState.falseStart && (
-        <ResultsScreen results={getRaceResults(cars)} />
+        <ResultsScreen results={getRaceResults(cars)} gameToken={gameToken} />
       )}
     </div>
   );
