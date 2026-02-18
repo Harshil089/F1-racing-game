@@ -154,8 +154,8 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   useEffect(() => {
     if (deviceType !== 'mobile') return;
 
-    // Don't attach touch handlers when game is finished — allow normal scrolling
-    if (gameState === 'finished') return;
+    // Don't attach touch handlers when game is finished or leaderboard is showing — allow normal scrolling
+    if (gameState === 'finished' || showLeaderboard) return;
 
     const handleTouchStart = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
@@ -244,7 +244,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
       document.removeEventListener('touchstart', handleTouchStart);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [gameState, lightsState, lightsOutTimestamp, startLightsSequence, deviceType]);
+  }, [gameState, lightsState, lightsOutTimestamp, startLightsSequence, deviceType, showLeaderboard]);
 
   // Handle keyboard events (for laptop)
   useEffect(() => {
@@ -398,9 +398,9 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   }, [canvasSize]);
 
   return (
-    <div className={`relative w-full min-h-screen py-8 flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-white ${(gameState === 'countdown' || gameState === 'racing') ? 'touch-action-none overflow-hidden h-screen' : ''
+    <div className={`relative w-full min-h-screen py-8 flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-white ${(gameState === 'countdown' || gameState === 'racing') && !showLeaderboard ? 'touch-action-none overflow-hidden h-screen' : ''
       }`}
-      style={{ touchAction: (gameState === 'countdown' || gameState === 'racing') ? 'none' : 'auto' }}
+      style={{ touchAction: (gameState === 'countdown' || gameState === 'racing') && !showLeaderboard ? 'none' : 'auto' }}
     >
       {/* Start Lights */}
       {gameState === 'countdown' && (
