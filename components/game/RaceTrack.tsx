@@ -44,6 +44,7 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
   const lightIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const lightsOutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const leaderboardTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const playerReleasedRef = useRef(false);
 
   // Load device type from localStorage
   useEffect(() => {
@@ -207,8 +208,10 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
             )
           );
         }
-      } else if (gameState === 'racing' && lightsState.allOut) {
-        // Valid start - release after lights out
+      } else if (gameState === 'racing' && lightsState.allOut && !playerReleasedRef.current) {
+        // Valid start - release after lights out (only process once)
+        playerReleasedRef.current = true;
+
         const releaseTime = Date.now();
         const reactionTime = releaseTime - lightsOutTimestamp;
 
@@ -298,8 +301,10 @@ export default function RaceTrack({ playerName, playerCarNumber }: RaceTrackProp
             )
           );
         }
-      } else if (gameState === 'racing' && lightsState.allOut) {
-        // Valid start - release after lights out
+      } else if (gameState === 'racing' && lightsState.allOut && !playerReleasedRef.current) {
+        // Valid start - release after lights out (only process once)
+        playerReleasedRef.current = true;
+
         const releaseTime = Date.now();
         const reactionTime = releaseTime - lightsOutTimestamp;
 
